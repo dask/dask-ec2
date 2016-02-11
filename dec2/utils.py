@@ -1,5 +1,6 @@
 import time
 
+
 def retry(retries=10, wait=5, catch=None):
     """
     Decorator to retry on exceptions raised
@@ -50,7 +51,7 @@ class Table():
     def formatRow(self, row, columns, colLengths):
         s = ""
         colsInRow = len(row)
-        for n in xrange(columns):
+        for n in range(columns):
             if n <= (colsInRow - 1):
                 s += "| " + row[n] + (" " * ((colLengths[n] - len(row[n])) + 1))
             else: # index out of bounds
@@ -83,22 +84,22 @@ class Table():
             i = 0
             for r in data:
                 if(i <= 1):
-                    print border
-                print self.formatRow(r, columns, maxColLengths)
+                    print(border)
+                print(self.formatRow(r, columns, maxColLengths))
                 i += 1
-            print border
+            print(border)
         elif self.tabletype == 1:
             border = self.formatRowBorder(maxColLengths)
             i = 0
             for r in data:
                 if(i <= 1):
-                    print border if i == 0 else border.replace("-", "=")
-                print self.formatRow(r, columns, maxColLengths)
+                    print(border if i == 0 else border.replace("-", "="))
+                print(self.formatRow(r, columns, maxColLengths))
                 i += 1
-            print border
+            print(border)
         elif self.tabletype == 2:
             border = self.formatRowBorder(maxColLengths)
             for r in data:
-                print border
-                print self.formatRow(r, columns, maxColLengths)
-            print border
+                print(border)
+                print(self.formatRow(r, columns, maxColLengths))
+            print(border)
