@@ -3,6 +3,7 @@ from __future__ import print_function, division, absolute_import
 import time
 import logging
 
+import paramiko
 import boto3
 from botocore.exceptions import ClientError
 
@@ -20,7 +21,7 @@ class EC2(object):
         self.ec2 = boto3.resource('ec2', region_name=region)
         self.client = boto3.client('ec2', region_name=region)
 
-    def check_keypair(self, keyname):
+    def check_keyname(self, keyname):
         try:
             key_pair = self.client.describe_key_pairs(KeyNames=[keyname])
             _ = [i for i in key_pair]
@@ -30,6 +31,19 @@ class EC2(object):
                 raise DEC2Exception("The keyname '%s' does not exist, please create it in the EC2 console" % keyname)
             else:
                 raise e
+
+    def check_keypair(self, keyname, keypair):
+        # TODO: Is this possible?
+        return
+        key_pair = self.ec2.KeyPair(keyname)
+        print(key_pair.key_fingerprint)
+
+        key = paramiko.RSAKey.from_private_key_file(keypair)
+        print(key.get_fingerprint())
+
+        # import hashlib
+        # sha1digest = hashlib.sha1(key.exportKey('DER', pkcs=8)).hexdigest()
+        # print(sha1digest)
 
     def check_sg(self, security_group):
         """Checks if the security groups exists, creates the default one if not
@@ -115,10 +129,12 @@ class EC2(object):
 
     def launch(self, name, image_id, instance_type, count, keyname,
                  security_group=DEFAULT_SG_GROUP_NAME, volume_type='gp2',
-                 volume_size=500):
-        self.check_keypair(keyname)
+                 volume_size=500, keypair=None):
+        self.check_keyname(keyname)
+        if keypair:
+            self.check_keypair(keyname, keypair)
         self.check_sg(security_group)
-
+        return
         device_map = [
             {
                 'DeviceName': '/dev/sda1',

@@ -62,7 +62,8 @@ def up(ctx, name, keyname, keypair, region_name, ami, username, instance_type, c
 
     click.echo("Launching nodes")
     instances = driver.launch(name=name, image_id=ami, instance_type=instance_type, count=count, keyname=keyname,
-                 security_group=security_group, volume_type=volume_type, volume_size=volume_size)
+                 security_group=security_group, volume_type=volume_type, volume_size=volume_size,
+                 keypair=keypair)
 
     cluster = Cluster.from_boto3_instances(instances)
     cluster.set_username(username)
