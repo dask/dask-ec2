@@ -134,7 +134,7 @@ class EC2(object):
         if keypair:
             self.check_keypair(keyname, keypair)
         self.check_sg(security_group)
-        return
+
         device_map = [
             {
                 'DeviceName': '/dev/sda1',
