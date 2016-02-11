@@ -6,4 +6,8 @@ class DEC2Exception(Exception):
 
 
 class RetriesExceededException(DEC2Exception):
-    pass
+
+    def __init__(self, function, last_exception=None, message="Retries limit exceeded"):
+        super(RetriesExceededException, self).__init__(message)
+        self.function = function
+        self.last_exception = last_exception
