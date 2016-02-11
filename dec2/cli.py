@@ -86,16 +86,23 @@ def up(ctx, name, keyname, keypair, region_name, ami, username, instance_type, c
 
 @cli.command(short_help="Destroy cluster")
 @click.option("--file", "filepath", type=click.Path(exists=True), default="cluster.yaml", show_default=True, required=False, help="Filepath to the instances metadata")
+@click.option('--yes', '-y', is_flag=True, default=False, help='Answers yes to questions')
 @click.option("--region-name", default="us-east-1", show_default=True, required=False, help="AWS region")
-def destroy(filepath, region_name):
-    cluster = Cluster.from_filepath(filepath)
+def destroy(filepath, yes, region_name):
+    import os
     from .ec2 import EC2
+    cluster = Cluster.from_filepath(filepath)
 
-    driver = EC2(region=region_name)
-    ids = [i.uid for i in cluster.instances]
-    # print(ids)
-    click.echo("Terminating instances")
-    driver.destroy(ids)
+    question = 'Are you sure you want to destroy the cluster?'
+    if yes or click.confirm(question):
+        driver = EC2(region=region_name)
+        ids = [i.uid for i in cluster.instances]
+        click.echo("Terminating instances")
+        driver.destroy(ids)
+
+        question = "Do you want to remove the `{}` file?".format(filepath)
+        if yes or click.confirm(question):
+            os.remove(filepath)
 
 
 @cli.command(short_help="SSH to one of the node. 0-index")
