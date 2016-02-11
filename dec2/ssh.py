@@ -133,7 +133,7 @@ class SSHClient(object):
         self.sftp.put(local, remote)
 
         if sudo:
-            cmd = 'cp -rf {}/* {}'.format(remote, real_remote)
+            cmd = 'cp -rf {} {}'.format(remote, real_remote)
             output = self.exec_command(cmd, sudo=True)
             cmd = 'rm -rf {}'.format(remote)
             output = self.exec_command(cmd, sudo=True)
