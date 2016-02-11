@@ -1,3 +1,5 @@
 *.egg-info
 *.pyc
+dist
+
 cluster.yaml
