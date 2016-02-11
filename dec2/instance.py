@@ -50,7 +50,7 @@ class Instance(object):
     @classmethod
     def from_dict(cls, data):
         self = cls(ip=data["ip"])
-        self.uip = data["uid"]
+        self.uid = data["uid"]
         self.port = data["port"]
         self.username = data["username"]
         self.keypair = data["keypair"]

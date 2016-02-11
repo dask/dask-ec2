@@ -83,6 +83,20 @@ def up(ctx, name, keyname, keypair, region_name, ami, username, instance_type, c
         ctx.invoke(provision, filepath=filepath)
 
 
+@cli.command(short_help="Destroy cluster")
+@click.option("--file", "filepath", type=click.Path(exists=True), default="cluster.yaml", show_default=True, required=False, help="Filepath to the instances metadata")
+@click.option("--region-name", default="us-east-1", show_default=True, required=False, help="AWS region")
+def destroy(filepath, region_name):
+    cluster = Cluster.from_filepath(filepath)
+    from .ec2 import EC2
+
+    driver = EC2(region=region_name)
+    ids = [i.uid for i in cluster.instances]
+    # print(ids)
+    click.echo("Terminating instances")
+    driver.destroy(ids)
+
+
 @cli.command(short_help="SSH to one of the node. 0-index")
 @click.argument('node', required=False, default=0)
 @click.option("--file", "filepath", type=click.Path(exists=True), default="cluster.yaml", show_default=True, required=False, help="Filepath to the instances metadata")

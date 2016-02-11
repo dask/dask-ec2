@@ -175,3 +175,10 @@ class EC2(object):
                 )
 
         return instances
+
+    def destroy(self, ids):
+        if ids is None or ids == []:
+            raise DEC2Exception("Instances ids cannot be none or empty list")
+        self.ec2.instances.filter(InstanceIds=ids).terminate()
+        waiter = self.client.get_waiter('instance_terminated')
+        waiter.wait(InstanceIds=ids)
