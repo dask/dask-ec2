@@ -1,6 +1,7 @@
 *.egg-info
 *.pyc
 dist
+build
 __pychache__
 
 cluster.yaml
