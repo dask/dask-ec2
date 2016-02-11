@@ -1,0 +1,6 @@
+click
+paramiko
+boto3
+pyyaml
+salt-pepper
+cm-api
