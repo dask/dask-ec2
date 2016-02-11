@@ -46,19 +46,28 @@ class EC2(object):
         # print(sha1digest)
 
     def check_sg(self, security_group):
-        """Checks if the security groups exists, creates the default one if not
+        """Checks if the security groups exists.
+        If security_group is the default one it will create it.
         """
         try:
             collection = self.ec2.security_groups.filter(GroupNames=[security_group])
-            _ = [i for i in collection]
+            matches = [i for i in collection]
+            if len(matches) == 0:
+                if security_group == DEFAULT_SG_GROUP_NAME:
+                    logger.debug("Default security group '%s' not found, creating it", DEFAULT_SG_GROUP_NAME)
+                    self.create_default_sg()
+                else:
+                    raise DEC2Exception("Security group '%s' not found, please create or use the default '%s'" % (security_group, DEFAULT_SG_GROUP_NAME))
         except ClientError as e:
             error_code = e.response["Error"]["Code"]
-            if (error_code == "InvalidGroup.NotFound" and
-               security_group == DEFAULT_SG_GROUP_NAME):
-                logger.debug("Default security group '%s' not found, creating it", DEFAULT_SG_GROUP_NAME)
-                self.create_default_sg()
+            if error_code == "InvalidGroup.NotFound":
+                if security_group == DEFAULT_SG_GROUP_NAME:
+                    logger.debug("Default security group '%s' not found, creating it", DEFAULT_SG_GROUP_NAME)
+                    self.create_default_sg()
+                else:
+                    raise DEC2Exception("Security group '%s' not found, please create or use the default '%s'" % (security_group, DEFAULT_SG_GROUP_NAME))
             else:
-                raise DEC2Exception("Security group '%s' not found, please create or use the default '%s'" % (security_group, DEFAULT_SG_GROUP_NAME))
+                raise e
 
     def create_default_sg(self):
         """Create the default security group
@@ -119,6 +128,8 @@ class EC2(object):
                 logger.debug("Inbound Permissions for default security group already set")
             else:
                 raise e
+
+        return security_group
 
     def get_security_group_ids(self, security_groups):
         """Get the security group ids for the security group names on

@@ -3,5 +3,6 @@
 dist
 build
 __pychache__
+.cache
 
 cluster.yaml
