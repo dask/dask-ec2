@@ -22,6 +22,7 @@ class EC2(object):
         self.client = boto3.client('ec2', region_name=region)
 
     def check_keyname(self, keyname):
+        logger.debug("Checking that keyname '%s' exists on EC2", keyname)
         try:
             key_pair = self.client.describe_key_pairs(KeyNames=[keyname])
             _ = [i for i in key_pair]
@@ -49,12 +50,13 @@ class EC2(object):
         """Checks if the security groups exists.
         If security_group is the default one it will create it.
         """
+        logger.debug("Checking that security group '%s' exists on EC2", security_group)
         try:
             collection = self.ec2.security_groups.filter(GroupNames=[security_group])
             matches = [i for i in collection]
             if len(matches) == 0:
                 if security_group == DEFAULT_SG_GROUP_NAME:
-                    logger.debug("Default security group '%s' not found, creating it", DEFAULT_SG_GROUP_NAME)
+                    logger.debug("Default security group '%s' not found, we will create it", DEFAULT_SG_GROUP_NAME)
                     self.create_default_sg()
                 else:
                     raise DEC2Exception("Security group '%s' not found, please create or use the default '%s'" % (security_group, DEFAULT_SG_GROUP_NAME))
@@ -72,6 +74,7 @@ class EC2(object):
     def create_default_sg(self):
         """Create the default security group
         """
+        logger.debug("Creating default (very open) security group '%s'", DEFAULT_SG_GROUP_NAME)
         try:
             response = self.client.create_security_group(
                 GroupName=DEFAULT_SG_GROUP_NAME,
@@ -84,7 +87,7 @@ class EC2(object):
             else:
                 raise e
 
-        logger.debug("Setting up default values for default security group")
+        logger.debug("Setting up default values for the '%s' security group", DEFAULT_SG_GROUP_NAME)
         collection = self.ec2.security_groups.filter(GroupNames=[DEFAULT_SG_GROUP_NAME])
         security_group = [i for i in collection][0]
 
@@ -157,6 +160,7 @@ class EC2(object):
             },
         ]
 
+        logger.debug("Creating %i instances on EC2", count)
         instances = self.ec2.create_instances(
             ImageId = image_id,
             KeyName = keyname,
@@ -178,6 +182,7 @@ class EC2(object):
         for i, instance in enumerate(collection):
             instances.append(instance)
             if name:
+                logger.debug("Tagging instance '%s'", instance.id)
                 self.ec2.create_tags(
                     Resources=[instance.id],
                     Tags=[
@@ -192,7 +197,8 @@ class EC2(object):
 
     def destroy(self, ids):
         if ids is None or ids == []:
-            raise DEC2Exception("Instances ids cannot be none or empty list")
+            raise DEC2Exception("Instances ids cannot be None or empty list")
+        logger.debug("Terminating instances: %s", ids)
         self.ec2.instances.filter(InstanceIds=ids).terminate()
         waiter = self.client.get_waiter('instance_terminated')
         waiter.wait(InstanceIds=ids)
