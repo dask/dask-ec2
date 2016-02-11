@@ -58,11 +58,12 @@ def up(ctx, name, keyname, keypair, region_name, ami, username, instance_type, c
     import yaml
     from .ec2 import EC2
 
+    driver = EC2(region=region_name)
+
     click.echo("Launching nodes")
-    driver = EC2(region=region_name, image=ami, instance_type=instance_type, count=count, keyname=keyname,
-                 security_groups=[security_group], volume_type=volume_type, volume_size=volume_size,
-                 name=name)
-    instances = driver.launch()
+    instances = driver.launch(name=name, image_id=ami, instance_type=instance_type, count=count, keyname=keyname,
+                 security_group=security_group, volume_type=volume_type, volume_size=volume_size)
+
     cluster = Cluster.from_boto3_instances(instances)
     cluster.set_username(username)
     cluster.set_keypair(keypair)

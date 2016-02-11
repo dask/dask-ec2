@@ -1,5 +1,6 @@
 from __future__ import print_function, division, absolute_import
 
+import time
 import logging
 
 import boto3
@@ -15,48 +16,35 @@ DEFAULT_SG_GROUP_NAME = "dec2-default"
 
 class EC2(object):
 
-    def __init__(self, region, image, instance_type, count, keyname,
-                 security_groups=None, volume_type='gp2',
-                 volume_size=500, name=None):
-        self.region = region
-        self.image_id = image
-        self.instance_type = instance_type
-        self.count = count
-        self.keyname = keyname
-        self.security_groups = security_groups or []
-        self.volume_type = volume_type
-        self.volume_size = volume_size
-        self.name = name
-
+    def __init__(self, region):
         self.ec2 = boto3.resource('ec2', region_name=region)
         self.client = boto3.client('ec2', region_name=region)
-        self.waiter = self.client.get_waiter('instance_running')
 
-    def check_keypair(self):
+    def check_keypair(self, keyname):
         try:
-            key_pair = self.client.describe_key_pairs(KeyNames=[self.keyname])
+            key_pair = self.client.describe_key_pairs(KeyNames=[keyname])
             _ = [i for i in key_pair]
         except ClientError as e:
             error_code = e.response["Error"]["Code"]
             if error_code == "InvalidKeyPair.NotFound":
-                raise DEC2Exception("The keyname '%s' does not exist, please create it in the EC2 console" % self.keyname)
+                raise DEC2Exception("The keyname '%s' does not exist, please create it in the EC2 console" % keyname)
             else:
                 raise e
 
-    def check_sg(self):
+    def check_sg(self, security_group):
         """Checks if the security groups exists, creates the default one if not
         """
         try:
-            collection = self.ec2.security_groups.filter(GroupNames=self.security_groups)
+            collection = self.ec2.security_groups.filter(GroupNames=[security_group])
             _ = [i for i in collection]
         except ClientError as e:
             error_code = e.response["Error"]["Code"]
             if (error_code == "InvalidGroup.NotFound" and
-               self.security_groups[0] == DEFAULT_SG_GROUP_NAME):
+               security_group == DEFAULT_SG_GROUP_NAME):
                 logger.debug("Default security group '%s' not found, creating it", DEFAULT_SG_GROUP_NAME)
                 self.create_default_sg()
             else:
-                raise DEC2Exception("Security group '%s' not found, please create or use the default '%s'" % (self.security_groups[0], DEFAULT_SG_GROUP_NAME))
+                raise DEC2Exception("Security group '%s' not found, please create or use the default '%s'" % (security_group, DEFAULT_SG_GROUP_NAME))
 
     def create_default_sg(self):
         """Create the default security group
@@ -118,58 +106,57 @@ class EC2(object):
             else:
                 raise e
 
-    def get_security_group_ids(self):
+    def get_security_group_ids(self, security_groups):
         """Get the security group ids for the security group names on
         `self.security_groups`
         """
-        collection = self.ec2.security_groups.filter(GroupNames=self.security_groups)
+        collection = self.ec2.security_groups.filter(GroupNames=security_groups)
         return [i.id for i in collection]
 
-    def launch(self):
-        self.check_keypair()
-        self.check_sg()
-        # return
+    def launch(self, name, image_id, instance_type, count, keyname,
+                 security_group=DEFAULT_SG_GROUP_NAME, volume_type='gp2',
+                 volume_size=500):
+        self.check_keypair(keyname)
+        self.check_sg(security_group)
+
         device_map = [
             {
-                # 'VirtualName': 'string',
                 'DeviceName': '/dev/sda1',
-                # 'NoDevice': 'string',
                 'Ebs': {
-                    # 'SnapshotId': 'string',
-                    'VolumeSize': self.volume_size,
+                    'VolumeSize': volume_size,
                     'DeleteOnTermination': True,
-                    'VolumeType': self.volume_type,
-                    # 'Iops': 123,
-                    # 'Encrypted': False
+                    'VolumeType': volume_type,
                 },
             },
         ]
 
         instances = self.ec2.create_instances(
-            ImageId = self.image_id,
-            KeyName = self.keyname,
-            MinCount = self.count,
-            MaxCount = self.count,
-            InstanceType = self.instance_type,
-            SecurityGroups = self.security_groups,
-            SecurityGroupIds = self.get_security_group_ids(),
+            ImageId = image_id,
+            KeyName = keyname,
+            MinCount = count,
+            MaxCount = count,
+            InstanceType = instance_type,
+            SecurityGroups = [security_group],
+            SecurityGroupIds = self.get_security_group_ids([security_group]),
             BlockDeviceMappings = device_map,
         )
+        time.sleep(5)
 
         ids = [i.id for i in instances]
-        self.waiter.wait(InstanceIds=ids)
+        waiter = self.client.get_waiter('instance_running')
+        waiter.wait(InstanceIds=ids)
 
         collection = self.ec2.instances.filter(InstanceIds=ids)
         instances = []
         for i, instance in enumerate(collection):
             instances.append(instance)
-            if self.name:
+            if name:
                 self.ec2.create_tags(
                     Resources=[instance.id],
                     Tags=[
                         {
                             'Key': 'Name',
-                            'Value': '{}-{}'.format(self.name, i)
+                            'Value': '{}-{}'.format(name, i)
                         },
                     ]
                 )
