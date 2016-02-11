@@ -42,6 +42,7 @@ def cli(ctx):
 @click.option("--name", required=True, help="Tag name on EC2")
 @click.option("--keyname", required=True, help="Keyname on EC2 console")
 @click.option("--keypair", required=True, type=click.Path(exists=True), help="Path to the keypair that matches the keyname")
+@click.option("--region-name", default="us-east-1", show_default=True, required=False, help="AWS region")
 @click.option("--ami", default="ami-d05e75b8", show_default=True, required=False, help="EC2 AMI")
 @click.option("--username", default="ubuntu", show_default=True, required=False, help="User to SSH to the AMI")
 @click.option("--type", "instance_type", default="m3.2xlarge", show_default=True, required=False, help="EC2 Instance Type")
@@ -53,12 +54,12 @@ def cli(ctx):
 @click.option("--ssh-check/--no-ssh-check", default=True, show_default=True, required=False, help="Whether to check or not for SSH connection")
 @click.option("--provision/--no-provision", "_provision", default=True, show_default=True, required=False, help="Provision salt on the nodes")
 @click.pass_context
-def up(ctx, name, keyname, keypair, ami, username, instance_type, count, security_group, volume_type, volume_size, filepath, ssh_check, _provision):
+def up(ctx, name, keyname, keypair, region_name, ami, username, instance_type, count, security_group, volume_type, volume_size, filepath, ssh_check, _provision):
     import yaml
     from .ec2 import EC2
 
     click.echo("Launching nodes")
-    driver = EC2(image=ami, instance_type=instance_type, count=count, keyname=keyname,
+    driver = EC2(region=region_name, image=ami, instance_type=instance_type, count=count, keyname=keyname,
                  security_groups=[security_group], volume_type=volume_type, volume_size=volume_size,
                  name=name)
     instances = driver.launch()

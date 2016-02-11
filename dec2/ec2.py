@@ -15,9 +15,10 @@ DEFAULT_SG_GROUP_NAME = "dec2-default"
 
 class EC2(object):
 
-    def __init__(self, image, instance_type, count, keyname,
+    def __init__(self, region, image, instance_type, count, keyname,
                  security_groups=None, volume_type='gp2',
                  volume_size=500, name=None):
+        self.region = region
         self.image_id = image
         self.instance_type = instance_type
         self.count = count
@@ -27,8 +28,8 @@ class EC2(object):
         self.volume_size = volume_size
         self.name = name
 
-        self.ec2 = boto3.resource('ec2')
-        self.client = boto3.client('ec2')
+        self.ec2 = boto3.resource('ec2', region_name=region)
+        self.client = boto3.client('ec2', region_name=region)
         self.waiter = self.client.get_waiter('instance_running')
 
     def check_keypair(self):
