@@ -1,5 +1,7 @@
 import time
 
+from dec2.exceptions import RetriesExceededException
+
 
 def retry(retries=10, wait=5, catch=None):
     """
@@ -18,11 +20,10 @@ def retry(retries=10, wait=5, catch=None):
                     time.sleep(wait)
                 except Exception as e:
                     raise e
-                else:
-                    raise DSBException('Retries limit exceded.')
+            else:
+                raise RetriesExceededException('Retries limit exceded')
 
         return wrapper
-
     return real_retry
 
 
