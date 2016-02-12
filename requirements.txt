@@ -4,3 +4,12 @@ boto3
 pyyaml
 salt-pepper
 cm-api
+
+# Test
+pytest
+coverage
+pytest-cov
+moto
+
+# Utils
+pylint

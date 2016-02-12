@@ -5,5 +5,7 @@ build
 __pychache__
 .cache
 .vagrant
+.coverage
+htmlcov
 
 cluster.yaml

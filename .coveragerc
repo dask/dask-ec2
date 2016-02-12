@@ -1,0 +1,7 @@
+[run]
+omit =
+    dec2/tests/*
+    dec2/_version.py
+    dec2/libpepper.py
+source =
+    dec2

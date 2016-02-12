@@ -1,0 +1,9 @@
+instances:
+- ip: 127.0.0.1
+  keypair: ~/.vagrant.d/insecure_private_key
+  port: 2222
+  username: vagrant
+- ip: 127.0.0.1
+  keypair: ~/.vagrant.d/insecure_private_key
+  port: 2223
+  username: vagrant
