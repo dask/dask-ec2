@@ -35,12 +35,40 @@ def dask_install(ctx, filepath):
         sys.exit(1)
 
     click.echo("Dask.Distributed Installation succeeded")
-    ctx.invoke(dask_open, filepath=filepath)
+    ctx.invoke(dask_address, filepath=filepath)
 
 
-@dask.command("open", short_help="Start a dask.distributed cluster")
+@dask.command("address", short_help="Print the address to the dask.distributed cluster")
 @click.pass_context
 @click.option("--file", "filepath", type=click.Path(exists=True), default="cluster.yaml", show_default=True, required=False, help="Filepath to the instances metadata")
-def dask_open(ctx, filepath):
+def dask_address(ctx, filepath):
     cluster = Cluster.from_filepath(filepath)
-    click.echo("Scheduler Address: {}:{}".format(cluster.instances[0].ip, 8786))
+    address = "{}:{}".format(cluster.instances[0].ip, 8786)
+    click.echo("Scheduler Address: {}".format(address))
+
+
+@dask.command("shell", short_help="Open a python (ipython if available) shell connected to the dask.distributed cluster")
+@click.pass_context
+@click.option("--file", "filepath", type=click.Path(exists=True), default="cluster.yaml", show_default=True, required=False, help="Filepath to the instances metadata")
+def dask_shell(ctx, filepath):
+    try:
+        import distributed
+    except:
+        click.echo("ERROR: `distributed` package not found, not starting the python shell", err=True)
+        sys.exit(1)
+    try:
+        import IPython
+        shell = "ipython"
+    except:
+        print('HSI')
+        shell = "python"
+    import os
+    import subprocess
+    import dec2
+    cluster = Cluster.from_filepath(filepath)
+    address = "{}:{}".format(cluster.instances[0].ip, 8786)
+    os.environ["DISTRIBUTED_ADDRESS"] = address
+    dec2_src = src_dir = os.path.realpath(os.path.dirname(dec2.__file__))
+    dask_shell_py = os.path.join(dec2_src, "cli", "dask_shell.py")
+    cmd = [shell, "-i", dask_shell_py]
+    subprocess.call(cmd)
