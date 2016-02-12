@@ -22,7 +22,7 @@ setup(name='dec2',
       package_data={'dec2': package_data},
       entry_points="""
         [console_scripts]
-        dec2=dec2.cli:start
+        dec2=dec2.cli.main:start
       """,
       install_requires=["click", "paramiko", "boto3", "pyyaml", "salt-pepper", "cm-api"]
 )
