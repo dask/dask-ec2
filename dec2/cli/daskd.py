@@ -17,7 +17,8 @@ def dask(ctx, filepath):
 @dask.command("install", short_help="Start a dask.distributed cluster")
 @click.pass_context
 @click.option("--file", "filepath", type=click.Path(exists=True), default="cluster.yaml", show_default=True, required=False, help="Filepath to the instances metadata")
-def dask_install(ctx, filepath):
+@click.option("--shell/--no-shell", is_flag=True, default=True, show_default=True, help="Start or not a python shell when installation is finished")
+def dask_install(ctx, filepath, shell):
     cluster = Cluster.from_filepath(filepath)
 
     click.echo("Installing scheduler")
@@ -37,6 +38,9 @@ def dask_install(ctx, filepath):
     click.echo("Dask.Distributed Installation succeeded")
     ctx.invoke(dask_address, filepath=filepath)
 
+    if shell:
+        click.echo("Starting python shell")
+        ctx.invoke(dask_shell, filepath=filepath)
 
 @dask.command("address", short_help="Print the address to the dask.distributed cluster")
 @click.pass_context
@@ -60,7 +64,6 @@ def dask_shell(ctx, filepath):
         import IPython
         shell = "ipython"
     except:
-        print('HSI')
         shell = "python"
     import os
     import subprocess
