@@ -91,7 +91,7 @@ def up(ctx, name, keyname, keypair, region_name, ami, username, instance_type, c
         ctx.invoke(provision, filepath=filepath)
 
     if _provision and dask:
-        from .dask import dask_install
+        from .daskd import dask_install
         ctx.invoke(dask_install, filepath=filepath)
 
 
