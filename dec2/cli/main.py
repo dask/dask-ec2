@@ -2,6 +2,8 @@ from __future__ import print_function, division, absolute_import
 
 import click
 
+from botocore.exceptions import ClientError
+
 import dec2
 from ..salt import Response
 from ..cluster import Cluster
@@ -20,6 +22,9 @@ def start():
         cli(obj={})
     except DEC2Exception as e:
         click.echo("ERROR: %s" % e, err=True)
+        sys.exit(1)
+    except ClientError as e:
+        click.echo("Unexpected EC2 error: %s" % e, err=True)
         sys.exit(1)
     except KeyboardInterrupt:
         click.echo(
