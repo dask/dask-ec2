@@ -9,14 +9,12 @@ from socket import gaierror as sock_gaierror, error as sock_error
 
 import paramiko
 
-
 logger = logging.getLogger(__name__)
 
 
 class SSHClient(object):
 
-    def __init__(self, host, username=None, password=None, pkey=None, port=22,
-                 timeout=15):
+    def __init__(self, host, username=None, password=None, pkey=None, port=22, timeout=15):
         self.host = host
         self.username = username
         self.password = password
@@ -38,9 +36,12 @@ class SSHClient(object):
         """Connect to host
         """
         try:
-            self.client.connect(self.host, username=self.username,
-                           password=self.password, port=self.port,
-                           pkey=self.pkey, timeout=self.timeout)
+            self.client.connect(self.host,
+                                username=self.username,
+                                password=self.password,
+                                port=self.port,
+                                pkey=self.pkey,
+                                timeout=self.timeout)
         except sock_gaierror as e:
             raise Exception("Unknown host '%s'" % self.host)
         except sock_error as e:
@@ -71,11 +72,11 @@ class SSHClient(object):
         logger.debug("Running command %s on '%s'", command, self.host)
         channel.exec_command(command, **kwargs)
 
-        while not (channel.recv_ready() or channel.closed or
-                   channel.exit_status_ready()):
+        while not (channel.recv_ready() or channel.closed or channel.exit_status_ready()):
             time.sleep(.2)
 
-        ret = {'stdout': stdout.read().strip(), 'stderr': stderr.read().strip(),
+        ret = {'stdout': stdout.read().strip(),
+               'stderr': stderr.read().strip(),
                'exit_code': channel.recv_exit_status()}
         return ret
 
@@ -99,7 +100,7 @@ class SSHClient(object):
             dirname, basename = posixpath.split(path)
             if self.check_dir(dirname):
                 logger.debug("Creating directory %s mode=%s", path, mode)
-                self.sftp.mkdir(basename, mode=mode) # sub-directory missing, so created it
+                self.sftp.mkdir(basename, mode=mode)    # sub-directory missing, so created it
                 self.sftp.chdir(basename)
             else:
                 # Make parent directories:
@@ -119,7 +120,7 @@ class SSHClient(object):
         Copy is done natively using SFTP/SCP version 2 protocol, no scp command
         is used or required.
         """
-        if(os.path.isdir(local)):
+        if (os.path.isdir(local)):
             self.put_dir(local, remote, sudo=sudo)
         else:
             self.put_single(local, remote, sudo=sudo)

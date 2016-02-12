@@ -37,6 +37,7 @@ def start():
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
+
 @click.group(context_settings=CONTEXT_SETTINGS)
 @click.version_option(prog_name="dec2", version=dec2.__version__)
 @click.pass_context
@@ -48,28 +49,83 @@ def cli(ctx):
 @click.pass_context
 @click.option("--name", required=True, help="Tag name on EC2")
 @click.option("--keyname", required=True, help="Keyname on EC2 console")
-@click.option("--keypair", required=True, type=click.Path(exists=True), help="Path to the keypair that matches the keyname")
-@click.option("--region-name", default="us-east-1", show_default=True, required=False, help="AWS region")
+@click.option("--keypair",
+              required=True,
+              type=click.Path(exists=True),
+              help="Path to the keypair that matches the keyname")
+@click.option("--region-name",
+              default="us-east-1",
+              show_default=True,
+              required=False,
+              help="AWS region")
 @click.option("--ami", default="ami-d05e75b8", show_default=True, required=False, help="EC2 AMI")
-@click.option("--username", default="ubuntu", show_default=True, required=False, help="User to SSH to the AMI")
-@click.option("--type", "instance_type", default="m3.2xlarge", show_default=True, required=False, help="EC2 Instance Type")
+@click.option("--username",
+              default="ubuntu",
+              show_default=True,
+              required=False,
+              help="User to SSH to the AMI")
+@click.option("--type",
+              "instance_type",
+              default="m3.2xlarge",
+              show_default=True,
+              required=False,
+              help="EC2 Instance Type")
 @click.option("--count", default=4, show_default=True, required=False, help="Number of nodes")
-@click.option("--security-group", default="dec2-default", show_default=True, required=False, help="Security Group Name")
-@click.option("--volume-type", default="gp2", show_default=True, required=False, help="Root volume type")
-@click.option("--volume-size", default=500, show_default=True, required=False, help="Root volume size (GB)")
-@click.option("--file", "filepath", type=click.Path(), default="cluster.yaml", show_default=True, required=False, help="File to save the metadata")
-@click.option("--ssh-check/--no-ssh-check", default=True, show_default=True, required=False, help="Whether to check or not for SSH connection")
-@click.option("--provision/--no-provision", "_provision", default=True, show_default=True, required=False, help="Provision salt on the nodes")
-@click.option("--dask/--no-dask", "dask", default=True, show_default=True, required=False, help="Install Dask.Distributed in the cluster")
-def up(ctx, name, keyname, keypair, region_name, ami, username, instance_type, count, security_group, volume_type, volume_size, filepath, ssh_check, _provision, dask):
+@click.option("--security-group",
+              default="dec2-default",
+              show_default=True,
+              required=False,
+              help="Security Group Name")
+@click.option("--volume-type",
+              default="gp2",
+              show_default=True,
+              required=False,
+              help="Root volume type")
+@click.option("--volume-size",
+              default=500,
+              show_default=True,
+              required=False,
+              help="Root volume size (GB)")
+@click.option("--file",
+              "filepath",
+              type=click.Path(),
+              default="cluster.yaml",
+              show_default=True,
+              required=False,
+              help="File to save the metadata")
+@click.option("--ssh-check/--no-ssh-check",
+              default=True,
+              show_default=True,
+              required=False,
+              help="Whether to check or not for SSH connection")
+@click.option("--provision/--no-provision",
+              "_provision",
+              default=True,
+              show_default=True,
+              required=False,
+              help="Provision salt on the nodes")
+@click.option("--dask/--no-dask",
+              "dask",
+              default=True,
+              show_default=True,
+              required=False,
+              help="Install Dask.Distributed in the cluster")
+def up(ctx, name, keyname, keypair, region_name, ami, username, instance_type, count,
+       security_group, volume_type, volume_size, filepath, ssh_check, _provision, dask):
     import yaml
     from ..ec2 import EC2
 
     driver = EC2(region=region_name)
     click.echo("Launching nodes")
-    instances = driver.launch(name=name, image_id=ami, instance_type=instance_type, count=count, keyname=keyname,
-                 security_group=security_group, volume_type=volume_type, volume_size=volume_size,
-                 keypair=keypair)
+    instances = driver.launch(name=name,
+                              image_id=ami,
+                              instance_type=instance_type,
+                              count=count,
+                              keyname=keyname,
+                              security_group=security_group,
+                              volume_type=volume_type,
+                              volume_size=volume_size,
+                              keypair=keypair)
 
     cluster = Cluster.from_boto3_instances(instances)
     cluster.set_username(username)
@@ -97,9 +153,19 @@ def up(ctx, name, keyname, keypair, region_name, ami, username, instance_type, c
 
 @cli.command(short_help="Destroy cluster")
 @click.pass_context
-@click.option("--file", "filepath", type=click.Path(exists=True), default="cluster.yaml", show_default=True, required=False, help="Filepath to the instances metadata")
+@click.option("--file",
+              "filepath",
+              type=click.Path(exists=True),
+              default="cluster.yaml",
+              show_default=True,
+              required=False,
+              help="Filepath to the instances metadata")
 @click.option('--yes', '-y', is_flag=True, default=False, help='Answers yes to questions')
-@click.option("--region-name", default="us-east-1", show_default=True, required=False, help="AWS region")
+@click.option("--region-name",
+              default="us-east-1",
+              show_default=True,
+              required=False,
+              help="AWS region")
 def destroy(ctx, filepath, yes, region_name):
     import os
     from ..ec2 import EC2
@@ -120,7 +186,13 @@ def destroy(ctx, filepath, yes, region_name):
 @cli.command(short_help="SSH to one of the node. 0-index")
 @click.pass_context
 @click.argument('node', required=False, default=0)
-@click.option("--file", "filepath", type=click.Path(exists=True), default="cluster.yaml", show_default=True, required=False, help="Filepath to the instances metadata")
+@click.option("--file",
+              "filepath",
+              type=click.Path(exists=True),
+              default="cluster.yaml",
+              show_default=True,
+              required=False,
+              help="Filepath to the instances metadata")
 def ssh(ctx, node, filepath):
     import os
     import subprocess
@@ -139,10 +211,28 @@ def ssh(ctx, node, filepath):
 
 @cli.command(short_help="Provision salt instances")
 @click.pass_context
-@click.option("--file", "filepath", type=click.Path(exists=True), default="cluster.yaml", show_default=True, required=False, help="Filepath to the instances metadata")
-@click.option("--master/--no-master", is_flag=True, default=True, show_default=True, help="Bootstrap the salt master")
-@click.option("--minions/--no-minions", is_flag=True, default=True, show_default=True, help="Bootstrap the salt minions")
-@click.option("--upload/--no-upload", is_flag=True, default=True, show_default=True, help="Upload the salt formulas")
+@click.option("--file",
+              "filepath",
+              type=click.Path(exists=True),
+              default="cluster.yaml",
+              show_default=True,
+              required=False,
+              help="Filepath to the instances metadata")
+@click.option("--master/--no-master",
+              is_flag=True,
+              default=True,
+              show_default=True,
+              help="Bootstrap the salt master")
+@click.option("--minions/--no-minions",
+              is_flag=True,
+              default=True,
+              show_default=True,
+              help="Bootstrap the salt minions")
+@click.option("--upload/--no-upload",
+              is_flag=True,
+              default=True,
+              show_default=True,
+              help="Upload the salt formulas")
 def provision(ctx, filepath, master, minions, upload):
     from ..salt import install_salt_master, install_salt_minion, upload_formulas
     cluster = Cluster.from_filepath(filepath)
@@ -159,7 +249,13 @@ def provision(ctx, filepath, master, minions, upload):
 
 @cli.command("cloudera-manager", short_help="Start a Cloudera manager cluster")
 @click.pass_context
-@click.option("--file", "filepath", type=click.Path(exists=True), default="cluster.yaml", show_default=True, required=False, help="Filepath to the instances metadata")
+@click.option("--file",
+              "filepath",
+              type=click.Path(exists=True),
+              default="cluster.yaml",
+              show_default=True,
+              required=False,
+              help="Filepath to the instances metadata")
 def cloudera_manager(ctx, filepath):
     cluster = Cluster.from_filepath(filepath)
     click.echo("Installing Cloudera Manager")

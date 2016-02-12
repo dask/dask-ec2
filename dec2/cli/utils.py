@@ -1,4 +1,5 @@
 class Table():
+
     def __init__(self, data, tabletype=0):
         self.data = data
         tabletypes = ["standard", "boldHead", "headless"]
@@ -20,16 +21,18 @@ class Table():
             s += "-" * (n + 2)
             s += "+"
         return s
+
     def formatRow(self, row, columns, colLengths):
         s = ""
         colsInRow = len(row)
         for n in range(columns):
             if n <= (colsInRow - 1):
                 s += "| " + row[n] + (" " * ((colLengths[n] - len(row[n])) + 1))
-            else: # index out of bounds
+            else:    # index out of bounds
                 s += "|" + (" " * (colLengths[n] + 2))
         s += "|"
         return s
+
     def write(self):
         # Find maximum columns
         # TODO: Don't store local copy, use self.data
@@ -47,7 +50,7 @@ class Table():
         maxColLengths = [0] * columns
         for i, r in enumerate(data):
             for j, c in enumerate(r):
-                if(len(str(c)) > maxColLengths[j]):
+                if (len(str(c)) > maxColLengths[j]):
                     maxColLengths[j] = len(str(c))
         #DEBUG: print maxColLengths
         # Print rable
@@ -55,7 +58,7 @@ class Table():
             border = self.formatRowBorder(maxColLengths)
             i = 0
             for r in data:
-                if(i <= 1):
+                if (i <= 1):
                     print(border)
                 print(self.formatRow(r, columns, maxColLengths))
                 i += 1
@@ -64,7 +67,7 @@ class Table():
             border = self.formatRowBorder(maxColLengths)
             i = 0
             for r in data:
-                if(i <= 1):
+                if (i <= 1):
                     print(border if i == 0 else border.replace("-", "="))
                 print(self.formatRow(r, columns, maxColLengths))
                 i += 1

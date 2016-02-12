@@ -3,7 +3,6 @@ import logging
 
 from dec2.exceptions import RetriesExceededException
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -23,7 +22,8 @@ def retry(retries=10, wait=5, catch=None):
                     return ret
                 except catch as e:
                     last_exception = e
-                    logger.debug("Attempt %i/%i of function '%s' failed", attempt, retries, function.__name__)
+                    logger.debug("Attempt %i/%i of function '%s' failed", attempt, retries,
+                                 function.__name__)
                     time.sleep(wait)
                 except Exception as e:
                     raise e
@@ -31,4 +31,5 @@ def retry(retries=10, wait=5, catch=None):
                 raise RetriesExceededException(function=function, last_exception=last_exception)
 
         return wrapper
+
     return real_retry

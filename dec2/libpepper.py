@@ -59,6 +59,7 @@ class Pepper(object):
               u'ms-4': True}]}
 
     '''
+
     def __init__(self, api_url='https://localhost:8000', debug_http=False, ignore_ssl_errors=False):
         '''
         Initialize the class with the URL of the API
@@ -75,8 +76,7 @@ class Pepper(object):
         '''
         split = urlparse.urlsplit(api_url)
         if not split.scheme in ['http', 'https']:
-            raise PepperException("salt-api URL missing HTTP(s) protocol: {0}"
-                                  .format(self.api_url))
+            raise PepperException("salt-api URL missing HTTP(s) protocol: {0}".format(self.api_url))
 
         self.api_url = api_url
         self.debug_http = int(debug_http)
@@ -93,7 +93,8 @@ class Pepper(object):
         :rtype: dictionary
 
         '''
-        if (hasattr(data, 'get') and data.get('eauth') == 'kerberos') or self.auth.get('eauth') == 'kerberos':
+        if (hasattr(data, 'get') and
+                data.get('eauth') == 'kerberos') or self.auth.get('eauth') == 'kerberos':
             return self.req_requests(path, data)
 
         headers = {
@@ -178,8 +179,7 @@ class Pepper(object):
                   'headers': headers,
                   'verify': self._ssl_verify == True,
                   'auth': auth,
-                  'data': json.dumps(data),
-                  }
+                  'data': json.dumps(data),}
         logger.debug('postdata {0}'.format(params))
         resp = requests.post(**params)
         if resp.status_code == 401:
@@ -200,18 +200,13 @@ class Pepper(object):
         '''
         return self.req(path, lowstate)
 
-    def local(self, tgt, fun, arg=None, kwarg=None, expr_form='glob',
-              timeout=None, ret=None):
+    def local(self, tgt, fun, arg=None, kwarg=None, expr_form='glob', timeout=None, ret=None):
         '''
         Run a single command using the ``local`` client
 
         Wraps :meth:`low`.
         '''
-        low = {
-            'client': 'local',
-            'tgt': tgt,
-            'fun': fun,
-        }
+        low = {'client': 'local', 'tgt': tgt, 'fun': fun,}
 
         if arg:
             low['arg'] = arg
@@ -230,18 +225,13 @@ class Pepper(object):
 
         return self.low([low], path='/')
 
-    def local_async(self, tgt, fun, arg=None, kwarg=None, expr_form='glob',
-                    timeout=None, ret=None):
+    def local_async(self, tgt, fun, arg=None, kwarg=None, expr_form='glob', timeout=None, ret=None):
         '''
         Run a single command using the ``local_async`` client
 
         Wraps :meth:`low`.
         '''
-        low = {
-            'client': 'local_async',
-            'tgt': tgt,
-            'fun': fun,
-        }
+        low = {'client': 'local_async', 'tgt': tgt, 'fun': fun,}
 
         if arg:
             low['arg'] = arg
@@ -269,7 +259,6 @@ class Pepper(object):
 
         return self.runner('jobs.lookup_jid', jid='{0}'.format(jid))
 
-
     def runner(self, fun, **kwargs):
         '''
         Run a single command using the ``runner`` client
@@ -277,10 +266,7 @@ class Pepper(object):
         Usage::
           runner('jobs.lookup_jid', jid=12345)
         '''
-        low = {
-            'client': 'runner',
-            'fun': fun,
-        }
+        low = {'client': 'runner', 'fun': fun,}
 
         low.update(kwargs)
 
@@ -295,7 +281,8 @@ class Pepper(object):
         self.auth = self.req('/login', {
             'username': username,
             'password': password,
-            'eauth': eauth}).get('return', [{}])[0]
+            'eauth': eauth
+        }).get('return', [{}])[0]
 
         return self.auth
 

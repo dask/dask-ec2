@@ -9,7 +9,6 @@ from botocore.exceptions import ClientError
 
 from dec2.exceptions import DEC2Exception
 
-
 logger = logging.getLogger(__name__)
 
 DEFAULT_SG_GROUP_NAME = "dec2-default"
@@ -29,7 +28,9 @@ class EC2(object):
         except ClientError as e:
             error_code = e.response["Error"]["Code"]
             if error_code == "InvalidKeyPair.NotFound":
-                raise DEC2Exception("The keyname '%s' does not exist, please create it in the EC2 console" % keyname)
+                raise DEC2Exception(
+                    "The keyname '%s' does not exist, please create it in the EC2 console" %
+                    keyname)
             else:
                 raise e
 
@@ -56,18 +57,24 @@ class EC2(object):
             matches = [i for i in collection]
             if len(matches) == 0:
                 if security_group == DEFAULT_SG_GROUP_NAME:
-                    logger.debug("Default security group '%s' not found, we will create it", DEFAULT_SG_GROUP_NAME)
+                    logger.debug("Default security group '%s' not found, we will create it",
+                                 DEFAULT_SG_GROUP_NAME)
                     self.create_default_sg()
                 else:
-                    raise DEC2Exception("Security group '%s' not found, please create or use the default '%s'" % (security_group, DEFAULT_SG_GROUP_NAME))
+                    raise DEC2Exception(
+                        "Security group '%s' not found, please create or use the default '%s'" %
+                        (security_group, DEFAULT_SG_GROUP_NAME))
         except ClientError as e:
             error_code = e.response["Error"]["Code"]
             if error_code == "InvalidGroup.NotFound":
                 if security_group == DEFAULT_SG_GROUP_NAME:
-                    logger.debug("Default security group '%s' not found, creating it", DEFAULT_SG_GROUP_NAME)
+                    logger.debug("Default security group '%s' not found, creating it",
+                                 DEFAULT_SG_GROUP_NAME)
                     self.create_default_sg()
                 else:
-                    raise DEC2Exception("Security group '%s' not found, please create or use the default '%s'" % (security_group, DEFAULT_SG_GROUP_NAME))
+                    raise DEC2Exception(
+                        "Security group '%s' not found, please create or use the default '%s'" %
+                        (security_group, DEFAULT_SG_GROUP_NAME))
             else:
                 raise e
 
@@ -78,8 +85,7 @@ class EC2(object):
         try:
             response = self.client.create_security_group(
                 GroupName=DEFAULT_SG_GROUP_NAME,
-                Description="Default security group for dec2",
-            )
+                Description="Default security group for dec2",)
         except ClientError as e:
             error_code = e.response["Error"]["Code"]
             if error_code == "InvalidGroup.Duplicate":
@@ -101,8 +107,7 @@ class EC2(object):
                         'CidrIp': '0.0.0.0/0'
                     },
                 ],
-            },
-            {
+            }, {
                 'IpProtocol': 'udp',
                 'FromPort': 0,
                 'ToPort': 65535,
@@ -111,8 +116,7 @@ class EC2(object):
                         'CidrIp': '0.0.0.0/0'
                     },
                 ],
-            },
-            {
+            }, {
                 'IpProtocol': 'icmp',
                 'FromPort': -1,
                 'ToPort': -1,
@@ -151,9 +155,16 @@ class EC2(object):
         collection = self.ec2.security_groups.filter(GroupNames=security_groups)
         return [i.id for i in collection]
 
-    def launch(self, name, image_id, instance_type, count, keyname,
-                 security_group=DEFAULT_SG_GROUP_NAME, volume_type='gp2',
-                 volume_size=500, keypair=None):
+    def launch(self,
+               name,
+               image_id,
+               instance_type,
+               count,
+               keyname,
+               security_group=DEFAULT_SG_GROUP_NAME,
+               volume_type='gp2',
+               volume_size=500,
+               keypair=None):
         self.check_keyname(keyname)
         if keypair:
             self.check_keypair(keyname, keypair)
@@ -172,15 +183,14 @@ class EC2(object):
 
         logger.debug("Creating %i instances on EC2", count)
         instances = self.ec2.create_instances(
-            ImageId = image_id,
-            KeyName = keyname,
-            MinCount = count,
-            MaxCount = count,
-            InstanceType = instance_type,
-            SecurityGroups = [security_group],
-            SecurityGroupIds = self.get_security_group_ids([security_group]),
-            BlockDeviceMappings = device_map,
-        )
+            ImageId=image_id,
+            KeyName=keyname,
+            MinCount=count,
+            MaxCount=count,
+            InstanceType=instance_type,
+            SecurityGroups=[security_group],
+            SecurityGroupIds=self.get_security_group_ids([security_group]),
+            BlockDeviceMappings=device_map,)
         time.sleep(5)
 
         ids = [i.id for i in instances]
@@ -193,15 +203,13 @@ class EC2(object):
             instances.append(instance)
             if name:
                 logger.debug("Tagging instance '%s'", instance.id)
-                self.ec2.create_tags(
-                    Resources=[instance.id],
-                    Tags=[
-                        {
-                            'Key': 'Name',
-                            'Value': '{}-{}'.format(name, i)
-                        },
-                    ]
-                )
+                self.ec2.create_tags(Resources=[instance.id],
+                                     Tags=[
+                                         {
+                                             'Key': 'Name',
+                                             'Value': '{}-{}'.format(name, i)
+                                         },
+                                     ])
 
         return instances
 

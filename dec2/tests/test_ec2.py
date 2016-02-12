@@ -5,14 +5,13 @@ from moto import mock_ec2
 from dec2.ec2 import DEFAULT_SG_GROUP_NAME
 from dec2.exceptions import DEC2Exception
 
-
 # Some default values
 name = "test_launch"
 ami = "ami-d05e75b8"
 instance_type = "m3.2xlarge"
 count = 3
 keyname = "mykey"
-keypair = None  # Skip check
+keypair = None    # Skip check
 volume_type = "gp2"
 volume_size = 500
 security_group = "another-sg"
@@ -21,9 +20,15 @@ security_group = "another-sg"
 @mock_ec2
 def test_launch_no_keyname(driver):
     with pytest.raises(DEC2Exception) as e:
-        driver.launch(name=name, image_id=ami, instance_type=instance_type, count=count, keyname=keyname,
-                security_group=DEFAULT_SG_GROUP_NAME, volume_type=volume_type, volume_size=volume_size,
-                keypair=keypair)
+        driver.launch(name=name,
+                      image_id=ami,
+                      instance_type=instance_type,
+                      count=count,
+                      keyname=keyname,
+                      security_group=DEFAULT_SG_GROUP_NAME,
+                      volume_type=volume_type,
+                      volume_size=volume_size,
+                      keypair=keypair)
     assert "The keyname 'mykey' does not exist, please create it in the EC2 console" == str(e.value)
     collection = driver.ec2.instances.filter()
     instances = [i for i in collection]
@@ -31,9 +36,15 @@ def test_launch_no_keyname(driver):
 
     driver.ec2.create_key_pair(KeyName=keyname)
 
-    driver.launch(name=name, image_id=ami, instance_type=instance_type, count=count, keyname=keyname,
-            security_group=DEFAULT_SG_GROUP_NAME, volume_type=volume_type, volume_size=volume_size,
-            keypair=keypair)
+    driver.launch(name=name,
+                  image_id=ami,
+                  instance_type=instance_type,
+                  count=count,
+                  keyname=keyname,
+                  security_group=DEFAULT_SG_GROUP_NAME,
+                  volume_type=volume_type,
+                  volume_size=volume_size,
+                  keypair=keypair)
 
     collection = driver.ec2.instances.filter()
     instances = [i for i in collection]
@@ -81,4 +92,5 @@ def test_check_sg(driver):
 
     with pytest.raises(DEC2Exception) as e:
         driver.check_sg("ANOTHER_FAKE_SG")
-    assert "Security group 'ANOTHER_FAKE_SG' not found, please create or use the default 'dec2-default'" == str(e.value)
+    assert "Security group 'ANOTHER_FAKE_SG' not found, please create or use the default 'dec2-default'" == str(
+        e.value)

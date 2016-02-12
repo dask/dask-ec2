@@ -9,7 +9,6 @@ import dec2
 from dec2.utils import retry
 from dec2.exceptions import DEC2Exception, RetriesExceededException
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -71,7 +70,6 @@ class Response(dict):
                 ret.append([node_id, data["successful"], data["failed"]])
         return ret
 
-
     def aggregated_success(self):
         """
         From an aggregated return True if all the states where successful
@@ -114,10 +112,12 @@ def install_salt_master(cluster):
         if ret["exit_code"] != 0:
             raise Exception(ret["stderr"].decode('utf-8'))
         return True
+
     try:
         __install_salt_master()
     except RetriesExceededException as e:
-        raise DEC2Exception("%s\nCouldn't bootstrap salt-master. Error is above (maybe try again)" % e.last_exception)
+        raise DEC2Exception("%s\nCouldn't bootstrap salt-master. Error is above (maybe try again)" %
+                            e.last_exception)
 
     @retry(retries=3, wait=0)
     def __install_salt_api():
@@ -126,20 +126,25 @@ def install_salt_master(cluster):
         ret = master.exec_command(cmd, sudo=True)
         if ret["exit_code"] != 0:
             raise Exception(ret["stderr"].decode('utf-8'))
+
     try:
         __install_salt_api()
     except RetriesExceededException as e:
-        raise DEC2Exception("%s\nCouldn't bootstrap salt-api. Error is above (maybe try again)" % e.last_exception)
+        raise DEC2Exception("%s\nCouldn't bootstrap salt-api. Error is above (maybe try again)" %
+                            e.last_exception)
 
     @retry(retries=3, wait=0)
     def __setup_salt_master():
         local = os.path.join(templates_src, "auto_accept.conf")
         remote = "/etc/salt/master.d/auto_accept.conf"
         master.put(local, remote, sudo=True)
+
     try:
         __setup_salt_master()
     except RetriesExceededException as e:
-        raise DEC2Exception("%s\nCouldn't setup salt-master settings. Error is above (maybe try again)" % e.last_exception)
+        raise DEC2Exception(
+            "%s\nCouldn't setup salt-master settings. Error is above (maybe try again)" %
+            e.last_exception)
 
     @retry(retries=3, wait=0)
     def __install_salt_rest_api():
@@ -147,10 +152,12 @@ def install_salt_master(cluster):
         ret = master.exec_command(cmd, sudo=True)
         if ret["exit_code"] != 0:
             raise Exception(ret["stderr"].decode('utf-8'))
+
     try:
         __install_salt_rest_api()
     except RetriesExceededException as e:
-        raise DEC2Exception("%s\nCouldn't install CherryPy. Error is above (maybe try again)" % e.last_exception)
+        raise DEC2Exception("%s\nCouldn't install CherryPy. Error is above (maybe try again)" %
+                            e.last_exception)
 
     @retry(retries=3, wait=0)
     def __create_ssl_cert():
@@ -158,30 +165,38 @@ def install_salt_master(cluster):
         ret = master.exec_command(cmd, sudo=True)
         if ret["exit_code"] != 0:
             raise Exception(ret["stderr"].decode('utf-8'))
+
     try:
         __create_ssl_cert()
     except RetriesExceededException as e:
-        raise DEC2Exception("%s\nCouldn't generate SSL certificate. Error is above (maybe try again)" % e.last_exception)
+        raise DEC2Exception(
+            "%s\nCouldn't generate SSL certificate. Error is above (maybe try again)" %
+            e.last_exception)
 
     @retry(retries=3, wait=0)
     def __setup_rest_cherrypy():
         local = os.path.join(templates_src, "rest_cherrypy.conf")
         remote = "/etc/salt/master.d/rest_cherrypy.conf"
         master.put(local, remote, sudo=True)
+
     try:
         __setup_rest_cherrypy()
     except RetriesExceededException as e:
-        raise DEC2Exception("%s\nCouldn't setup salt-rest server. Error is above (maybe try again)" % e.last_exception)
+        raise DEC2Exception("%s\nCouldn't setup salt-rest server. Error is above (maybe try again)"
+                            % e.last_exception)
 
     @retry(retries=3, wait=0)
     def __setup_salt_external_auth():
         local = os.path.join(templates_src, "external_auth.conf")
         remote = "/etc/salt/master.d/external_auth.conf"
         master.put(local, remote, sudo=True)
+
     try:
         __setup_salt_external_auth()
     except RetriesExceededException as e:
-        raise DEC2Exception("%s\nCouldn't setup salt external auth system. Error is above (maybe try again)" % e.last_exception)
+        raise DEC2Exception(
+            "%s\nCouldn't setup salt external auth system. Error is above (maybe try again)" %
+            e.last_exception)
 
     @retry(retries=3, wait=0)
     def __create_saltdev_user():
@@ -189,10 +204,12 @@ def install_salt_master(cluster):
         ret = master.exec_command(cmd, sudo=True)
         if ret["exit_code"] != 0:
             raise Exception(ret["stderr"].decode('utf-8'))
+
     try:
         __create_saltdev_user()
     except RetriesExceededException as e:
-        raise DEC2Exception("%s\nCouldn't create 'saltdev' user. Error is above (maybe try again)" % e.last_exception)
+        raise DEC2Exception("%s\nCouldn't create 'saltdev' user. Error is above (maybe try again)" %
+                            e.last_exception)
 
     @retry(retries=3, wait=0)
     def __restart_salt_master():
@@ -200,10 +217,13 @@ def install_salt_master(cluster):
         ret = master.exec_command(cmd, sudo=True)
         if ret["exit_code"] != 0:
             raise Exception(ret["stderr"].decode('utf-8'))
+
     try:
         __restart_salt_master()
     except RetriesExceededException as e:
-        raise DEC2Exception("%s\nCouldn't restart salt-master service. Error is above (maybe try again)" % e.last_exception)
+        raise DEC2Exception(
+            "%s\nCouldn't restart salt-master service. Error is above (maybe try again)" %
+            e.last_exception)
 
     @retry(retries=3, wait=0)
     def __restart_salt_api():
@@ -211,10 +231,13 @@ def install_salt_master(cluster):
         ret = master.exec_command(cmd, sudo=True)
         if ret["exit_code"] != 0:
             raise Exception(ret["stderr"].decode('utf-8'))
+
     try:
         __restart_salt_api()
     except RetriesExceededException as e:
-        raise DEC2Exception("%s\nCouldn't restart salt-api service. Error is above (maybe try again)" % e.last_exception)
+        raise DEC2Exception(
+            "%s\nCouldn't restart salt-api service. Error is above (maybe try again)" %
+            e.last_exception)
 
 
 def async_cmd(results, instance, command):
@@ -226,6 +249,7 @@ def async_cmd(results, instance, command):
         if ret["exit_code"] != 0:
             raise Exception(ret["stderr"].decode('utf-8'))
         return ret
+
     try:
         results[instance.ip] = __remote_cmd()
     except RetriesExceededException as e:
@@ -239,10 +263,12 @@ def async_upload(results, instance, local, remote):
     def __remote_upload():
         client.put(local, remote, sudo=True)
         return True
+
     try:
         results[instance.ip] = __remote_upload()
     except RetriesExceededException as e:
         results[instance.ip] = False
+
 
 def install_salt_minion(cluster):
     dec2_src = src_dir = os.path.realpath(os.path.dirname(dec2.__file__))
@@ -254,7 +280,8 @@ def install_salt_minion(cluster):
     for i, instance in enumerate(cluster.instances):
         minion_id = "node-{}".format(i)
         cmd = "curl -L https://bootstrap.saltstack.com | sh -s -- "
-        cmd += "-P -L -A {master_ip} -i {minion_id} stable".format(master_ip=master_ip, minion_id=minion_id)
+        cmd += "-P -L -A {master_ip} -i {minion_id} stable".format(master_ip=master_ip,
+                                                                   minion_id=minion_id)
         t = threading.Thread(target=async_cmd, args=(results, instance, cmd))
         t.start()
         threads.append(t)
@@ -268,7 +295,8 @@ def install_salt_minion(cluster):
             if minion_data == False:
                 failed_nodes.append(minion_ip)
         if failed_nodes:
-            raise DEC2Exception("Error bootstraping salt-minion at nodes: %s (maybe try again)" % failed_nodes)
+            raise DEC2Exception("Error bootstraping salt-minion at nodes: %s (maybe try again)" %
+                                failed_nodes)
 
     logger.debug("Configuring salt-mine on the salt minions")
     results, threads = {}, []
@@ -288,7 +316,9 @@ def install_salt_minion(cluster):
             if minion_data == False:
                 failed_nodes.append(minion_ip)
         if failed_nodes:
-            raise DEC2Exception("Error configuring the salt-mine in the salt-minion at nodes: %s (maybe try again)" % failed_nodes)
+            raise DEC2Exception(
+                "Error configuring the salt-mine in the salt-minion at nodes: %s (maybe try again)"
+                % failed_nodes)
 
     logger.debug("Restarting the salt-minion service")
     results, threads = {}, []
@@ -307,7 +337,8 @@ def install_salt_minion(cluster):
             if minion_data == False:
                 failed_nodes.append(minion_ip)
         if failed_nodes:
-            raise DEC2Exception("Error restarting the salt-minion at nodes: %s (maybe try again)" % failed_nodes)
+            raise DEC2Exception("Error restarting the salt-minion at nodes: %s (maybe try again)" %
+                                failed_nodes)
 
 
 def upload_formulas(cluster):

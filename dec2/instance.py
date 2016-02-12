@@ -10,7 +10,6 @@ from paramiko.ssh_exception import BadHostKeyException, AuthenticationException,
 from .ssh import SSHClient
 from .utils import retry
 
-
 logger = logging.getLogger(__name__)
 
 

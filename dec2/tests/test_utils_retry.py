@@ -15,6 +15,8 @@ def ok_with_args(*args, **kwargs):
 
 
 ATTEMPT = 0
+
+
 @retry(wait=0, retries=10)
 def fail_10():
     global ATTEMPT
