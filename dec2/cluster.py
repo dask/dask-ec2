@@ -1,11 +1,13 @@
 from __future__ import print_function, division, absolute_import
 
+import urllib2
 import logging
 
 import yaml
 from . import libpepper
 
-from dec2.instance import Instance
+from .exceptions import DEC2Exception
+from .instance import Instance
 
 
 logger = logging.getLogger(__name__)
@@ -43,11 +45,21 @@ class Cluster(object):
     def get_pepper_client(self):
         if not self._pepper:
             url = 'https://{}:8000'.format(self.instances[0].ip)
-            self._pepper = libpepper.Pepper(url, ignore_ssl_errors=True)
-            self._pepper.login('saltdev', 'saltdev', 'pam')
+            try:
+                self._pepper = libpepper.Pepper(url, ignore_ssl_errors=True)
+                self._pepper.login('saltdev', 'saltdev', 'pam')
+            except urllib2.URLError as e:
+                raise DEC2Exception("Could not connect to salt server. Try `dec2 provision` and try again")
         return self._pepper
 
     pepper = property(get_pepper_client, None, None)
+
+    def salt_call(self, target, module, args=None):
+        args = [] or args
+        try:
+            return self.pepper.local(target, module, args)
+        except urllib2.URLError as e:
+            raise DEC2Exception("Could not connect to salt server. Try `dec2 provision` and try again")
 
     def get_cloudera_manager(self):
         if six.PY2:

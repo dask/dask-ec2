@@ -1,3 +1,5 @@
+import sys
+
 import click
 
 from .main import cli, print_state
@@ -20,14 +22,14 @@ def dask_install(ctx, filepath):
 
     click.echo("Installing scheduler")
     cluster.pepper.local("node-0", "grains.append", ["roles", "dask.distributed.scheduler"])
-    output = cluster.pepper.local("node-0", "state.sls", ["dask.distributed.scheduler"])
+    output = cluster.salt_call("node-0", "state.sls", ["dask.distributed.scheduler"])
     response = print_state(output)
     if not response.aggregated_success():
         sys.exit(1)
 
     click.echo("Installing workers")
     cluster.pepper.local("node-[1-9]*", "grains.append", ["roles", "dask.distributed.worker"])
-    output = cluster.pepper.local("node-[1-9]*", "state.sls", ["dask.distributed.worker"])
+    output = cluster.salt_call("node-[1-9]*", "state.sls", ["dask.distributed.worker"])
     response = print_state(output)
     if not response.aggregated_success():
         sys.exit(1)
