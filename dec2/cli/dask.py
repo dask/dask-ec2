@@ -17,16 +17,22 @@ def dask(ctx, filepath):
 @click.option("--file", "filepath", type=click.Path(exists=True), default="cluster.yaml", show_default=True, required=False, help="Filepath to the instances metadata")
 def dask_install(ctx, filepath):
     cluster = Cluster.from_filepath(filepath)
+
     click.echo("Installing scheduler")
     cluster.pepper.local("node-0", "grains.append", ["roles", "dask.distributed.scheduler"])
     output = cluster.pepper.local("node-0", "state.sls", ["dask.distributed.scheduler"])
     response = print_state(output)
+    if not response.aggregated_success():
+        sys.exit(1)
 
     click.echo("Installing workers")
     cluster.pepper.local("node-[1-9]*", "grains.append", ["roles", "dask.distributed.worker"])
     output = cluster.pepper.local("node-[1-9]*", "state.sls", ["dask.distributed.worker"])
     response = print_state(output)
+    if not response.aggregated_success():
+        sys.exit(1)
 
+    click.echo("Dask.Distributed Installation succeeded")
     ctx.invoke(dask_open, filepath=filepath)
 
 
@@ -35,4 +41,4 @@ def dask_install(ctx, filepath):
 @click.option("--file", "filepath", type=click.Path(exists=True), default="cluster.yaml", show_default=True, required=False, help="Filepath to the instances metadata")
 def dask_open(ctx, filepath):
     cluster = Cluster.from_filepath(filepath)
-    click.echo("Scheduler URL: {}:{}".format(cluster.instances[0].ip, 8786))
+    click.echo("Scheduler Address: {}:{}".format(cluster.instances[0].ip, 8786))

@@ -71,6 +71,17 @@ class Response(dict):
                 ret.append([node_id, data["successful"], data["failed"]])
         return ret
 
+
+    def aggregated_success(self):
+        """
+        From an aggregated return True if all the states where successful
+        """
+        ret = True
+        for node_id, data in self.items():
+            failed = data["failed"]
+            ret = ret & len(failed) == 0
+        return ret
+
     def group_by_id(self, ignore_fields=None, sort=True):
         if ignore_fields:
             copy = copy_(self)

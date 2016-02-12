@@ -3,6 +3,7 @@ from __future__ import print_function, division, absolute_import
 import click
 
 import dec2
+from ..salt import Response
 from ..cluster import Cluster
 from ..exceptions import DEC2Exception
 from ..config import setup_logging
@@ -160,7 +161,6 @@ def cloudera_manager(ctx, filepath):
 
 
 def print_state(output):
-    from .salt import Response
     response = Response.from_dict(output)
     response = response.aggregate_by(field="result")
     data = [["Node ID", "# Successful actions", "# Failed action"]]
