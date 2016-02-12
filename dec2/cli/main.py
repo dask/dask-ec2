@@ -247,24 +247,6 @@ def provision(ctx, filepath, master, minions, upload):
         upload_formulas(cluster)
 
 
-@cli.command("cloudera-manager", short_help="Start a Cloudera manager cluster")
-@click.pass_context
-@click.option("--file",
-              "filepath",
-              type=click.Path(exists=True),
-              default="cluster.yaml",
-              show_default=True,
-              required=False,
-              help="Filepath to the instances metadata")
-def cloudera_manager(ctx, filepath):
-    cluster = Cluster.from_filepath(filepath)
-    click.echo("Installing Cloudera Manager")
-    cluster.pepper.local("node-0", "grains.append", ["roles", "cloudera.manager.server"])
-    cluster.pepper.local("node-*", "grains.append", ["roles", "cloudera.manager.agent"])
-    output = cluster.pepper.local("node-*", "state.sls", ["cloudera.manager.cluster"])
-    print_state(output)
-
-
 def print_state(output):
     response = Response.from_dict(output)
     response = response.aggregate_by(field="result")
@@ -284,3 +266,4 @@ def print_state(output):
 
 
 from .daskd import *
+# from .cloudera import *
