@@ -71,7 +71,7 @@ def up(ctx, name, keyname, keypair, region_name, ami, username, instance_type, c
     cluster.set_keypair(keypair)
     with open(filepath, "w") as f:
         yaml.safe_dump(cluster.to_dict(), f, default_flow_style=False)
-    
+
     if ssh_check:
         click.echo("Checking SSH connection to nodes")
         cluster = Cluster.from_filepath(filepath)
@@ -97,7 +97,7 @@ def up(ctx, name, keyname, keypair, region_name, ami, username, instance_type, c
 @click.option("--region-name", default="us-east-1", show_default=True, required=False, help="AWS region")
 def destroy(ctx, filepath, yes, region_name):
     import os
-    from .ec2 import EC2
+    from ..ec2 import EC2
     cluster = Cluster.from_filepath(filepath)
 
     question = 'Are you sure you want to destroy the cluster?'
