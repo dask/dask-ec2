@@ -111,6 +111,16 @@ class EC2(object):
                         'CidrIp': '0.0.0.0/0'
                     },
                 ],
+            },
+            {
+                'IpProtocol': 'icmp',
+                'FromPort': -1,
+                'ToPort': -1,
+                'IpRanges': [
+                    {
+                        'CidrIp': '0.0.0.0/0'
+                    },
+                ],
             }
         ]
 
