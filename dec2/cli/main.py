@@ -55,12 +55,12 @@ def cli(ctx):
 @click.option("--file", "filepath", type=click.Path(), default="cluster.yaml", show_default=True, required=False, help="File to save the metadata")
 @click.option("--ssh-check/--no-ssh-check", default=True, show_default=True, required=False, help="Whether to check or not for SSH connection")
 @click.option("--provision/--no-provision", "_provision", default=True, show_default=True, required=False, help="Provision salt on the nodes")
-def up(ctx, name, keyname, keypair, region_name, ami, username, instance_type, count, security_group, volume_type, volume_size, filepath, ssh_check, _provision):
+@click.option("--dask/--no-dask", "dask", default=True, show_default=True, required=False, help="Install Dask.Distributed in the cluster")
+def up(ctx, name, keyname, keypair, region_name, ami, username, instance_type, count, security_group, volume_type, volume_size, filepath, ssh_check, _provision, dask):
     import yaml
-    from .ec2 import EC2
+    from ..ec2 import EC2
 
     driver = EC2(region=region_name)
-
     click.echo("Launching nodes")
     instances = driver.launch(name=name, image_id=ami, instance_type=instance_type, count=count, keyname=keyname,
                  security_group=security_group, volume_type=volume_type, volume_size=volume_size,
@@ -71,7 +71,7 @@ def up(ctx, name, keyname, keypair, region_name, ami, username, instance_type, c
     cluster.set_keypair(keypair)
     with open(filepath, "w") as f:
         yaml.safe_dump(cluster.to_dict(), f, default_flow_style=False)
-
+    
     if ssh_check:
         click.echo("Checking SSH connection to nodes")
         cluster = Cluster.from_filepath(filepath)
@@ -84,6 +84,10 @@ def up(ctx, name, keyname, keypair, region_name, ami, username, instance_type, c
 
     if _provision:
         ctx.invoke(provision, filepath=filepath)
+
+    if _provision and dask:
+        from .dask import dask_install
+        ctx.invoke(dask_install, filepath=filepath)
 
 
 @cli.command(short_help="Destroy cluster")
@@ -135,7 +139,7 @@ def ssh(ctx, node, filepath):
 @click.option("--minions/--no-minions", is_flag=True, default=True, show_default=True, help="Bootstrap the salt minions")
 @click.option("--upload/--no-upload", is_flag=True, default=True, show_default=True, help="Upload the salt formulas")
 def provision(ctx, filepath, master, minions, upload):
-    from .salt import install_salt_master, install_salt_minion, upload_formulas
+    from ..salt import install_salt_master, install_salt_minion, upload_formulas
     cluster = Cluster.from_filepath(filepath)
     if master:
         click.echo("Bootstraping salt master")
