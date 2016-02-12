@@ -23,3 +23,7 @@ dscheduler-update-supervisor:
 dscheduler-running:
   supervisord.running:
     - name: dscheduler
+    - watch:
+      - cmd: dask.distributed
+      - file: dscheduler.conf
+      - cmd: dscheduler-update-supervisor

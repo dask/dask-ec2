@@ -23,3 +23,7 @@ dworker-update-supervisor:
 dworker-running:
   supervisord.running:
     - name: dworker
+    - watch:
+      - cmd: dask.distributed
+      - file: dworker.conf
+      - cmd: dworker-update-supervisor

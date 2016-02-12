@@ -13,6 +13,7 @@ dask-install:
 distributed-install:
   pip.installed:
     - name: distributed
+    - upgrade: true
     - bin_env: {{ install_prefix }}/bin/pip
     - require:
       - sls: conda
