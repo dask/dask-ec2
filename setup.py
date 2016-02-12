@@ -4,11 +4,14 @@ import os
 import versioneer
 from setuptools import setup, find_packages
 
-datadir = os.path.join('dec2', 'formulas')
-all_directories = [[os.path.join(d, f) for f in folders] for d, folders, files in os.walk(datadir)]
+formulas_dir = os.path.join('dec2', 'formulas')
+all_directories = [[os.path.join(d, f) for f in folders] for d, folders, files in os.walk(formulas_dir)]
 flattern = [item for sublist in all_directories for item in sublist]
-package_data = [folder[len('dec2/'):] + '/*' for folder in flattern]
+formulas_data = [folder[len('dec2/'):] + '/*' for folder in flattern]
 
+package_data = formulas_data + ["templates/*"]
+
+print(package_data)
 setup(name='dec2',
       version=versioneer.get_version(),
       cmdclass=versioneer.get_cmdclass(),
