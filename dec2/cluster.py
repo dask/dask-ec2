@@ -3,6 +3,7 @@ from __future__ import print_function, division, absolute_import
 import urllib2
 import logging
 
+import six
 import yaml
 from . import libpepper
 
