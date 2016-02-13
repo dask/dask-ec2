@@ -1,12 +1,12 @@
 from __future__ import print_function, division, absolute_import
 
-import urllib2
 import logging
 
 import six
 import yaml
 from . import libpepper
 
+from .compatibility import URLError
 from .exceptions import DEC2Exception
 from .instance import Instance
 
@@ -48,7 +48,7 @@ class Cluster(object):
             try:
                 self._pepper = libpepper.Pepper(url, ignore_ssl_errors=True)
                 self._pepper.login('saltdev', 'saltdev', 'pam')
-            except urllib2.URLError as e:
+            except URLError as e:
                 raise DEC2Exception(
                     "Could not connect to salt server. Try `dec2 provision` and try again")
         return self._pepper
@@ -59,7 +59,7 @@ class Cluster(object):
         args = [] or args
         try:
             return self.pepper.local(target, module, args)
-        except urllib2.URLError as e:
+        except URLError as e:
             raise DEC2Exception(
                 "Could not connect to salt server. Try `dec2 provision` and try again")
 

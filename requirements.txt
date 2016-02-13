@@ -1,3 +1,4 @@
+six
 click
 paramiko
 boto3
