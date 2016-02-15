@@ -106,8 +106,7 @@ def install_salt_master(cluster):
 
     @retry(retries=3, wait=0)
     def __install_salt_master():
-        cmd = "curl -sS -L https://bootstrap.saltstack.com | sh -s -- "
-        cmd += "-M -N stable"
+        cmd = "curl -sS -L https://bootstrap.saltstack.com | sh -s -- -M -N stable"
         ret = master.exec_command(cmd, sudo=True)
         if ret["exit_code"] != 0:
             raise Exception(ret["stderr"].decode('utf-8'))
@@ -121,8 +120,7 @@ def install_salt_master(cluster):
 
     @retry(retries=3, wait=0)
     def __install_salt_api():
-        cmd = "curl -L https://bootstrap.saltstack.com | sh -s -- "
-        cmd += "-M -N -P -L -p salt-api stable"
+        cmd = "curl -L https://bootstrap.saltstack.com | sh -s -- -M -N -P -L -p salt-api stable"
         ret = master.exec_command(cmd, sudo=True)
         if ret["exit_code"] != 0:
             raise Exception(ret["stderr"].decode('utf-8'))
