@@ -63,18 +63,6 @@ class Cluster(object):
             raise DEC2Exception(
                 "Could not connect to salt server. Try `dec2 provision` and try again")
 
-    def get_cloudera_manager(self):
-        if six.PY2:
-            from cm_api.api_client import ApiResource
-            if not self._cmanager:
-                cm_host = self.instances[0].ip
-                self._cmanager = ApiResource(cm_host, username="admin", password="admin")
-            return self._cmanager
-        else:
-            raise DEC2Exception("Cloudera Manager API doesn't work on PY3")
-
-    cmanager = property(get_cloudera_manager, None, None)
-
     def append(self, instance):
         self.instances.append(instance)
 
