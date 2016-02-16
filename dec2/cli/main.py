@@ -112,8 +112,15 @@ def cli(ctx):
               help="Install Dask.Distributed in the cluster")
 def up(ctx, name, keyname, keypair, region_name, ami, username, instance_type, count,
        security_group, volume_type, volume_size, filepath, ssh_check, _provision, dask):
+    import os
     import yaml
     from ..ec2 import EC2
+
+    if os.path.exists(filepath):
+        if not click.confirm("A file named {} already exists, proceding will overwrite this file. Continue?".format(filepath)):
+            click.echo("Not doing anything")
+            sys.exit(0)
+
 
     driver = EC2(region=region_name)
     click.echo("Launching nodes")
