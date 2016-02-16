@@ -47,12 +47,12 @@ def cli(ctx):
 
 @cli.command(short_help="Launch instances")
 @click.pass_context
-@click.option("--name", required=True, help="Tag name on EC2")
 @click.option("--keyname", required=True, help="Keyname on EC2 console")
 @click.option("--keypair",
               required=True,
               type=click.Path(exists=True),
               help="Path to the keypair that matches the keyname")
+@click.option("--name", required=False, default="dec2-cluster", help="Tag name on EC2")
 @click.option("--region-name",
               default="us-east-1",
               show_default=True,
