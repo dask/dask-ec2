@@ -77,7 +77,8 @@ class Cluster(object):
     def check_ssh(self):
         ret = {}
         for instance in self.instances:
-            ret[instance.ip] = instance.check_ssh()
+            address = "{}:{}".format(instance.ip, instance.port)
+            ret[address] = instance.check_ssh()
         return ret
 
     def to_dict(self):
