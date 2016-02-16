@@ -1,0 +1,19 @@
+version: '2'
+
+services:
+  head:
+    build: .
+    hostname: head
+    ports:
+      - "2222:22"
+      - "4505:4505"
+      - "4506:4506"
+      - "8000:8000"
+
+  compute:
+    build: .
+    hostname: compute
+    ports:
+      - "2223:22"
+      - "4510:4510"
+      - "4511:4511"
