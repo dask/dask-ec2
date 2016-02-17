@@ -241,7 +241,9 @@ def ssh(ctx, node, filepath):
               show_default=True,
               help="Upload the salt formulas")
 def provision(ctx, filepath, master, minions, upload):
-    from ..salt import install_salt_master, install_salt_minion, upload_formulas
+    import six
+    from ..salt import install_salt_master, install_salt_minion, upload_formulas, upload_pillar
+
     cluster = Cluster.from_filepath(filepath)
     if master:
         click.echo("Bootstraping salt master")
@@ -252,6 +254,8 @@ def provision(ctx, filepath, master, minions, upload):
     if upload:
         click.echo("Uploading salt formulas")
         upload_formulas(cluster)
+        click.echo("Uploading conda settings")
+        upload_pillar(cluster, "conda.sls", {"conda": {"pyversion": 2 if six.PY2 else 3}})
 
 
 def print_state(output):
