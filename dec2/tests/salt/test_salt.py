@@ -13,7 +13,7 @@ def test_ssh(cluster):
 
 @remotetest
 def test_provision_salt(cluster):
-    # invoke("provision")
+    invoke("provision")
     response = cluster.salt_call("*", "test.ping")["return"][0]
     assert len(response) == 2
     for address, status in response.items():
