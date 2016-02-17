@@ -4,7 +4,6 @@ paramiko
 boto3
 pyyaml
 salt-pepper
-cm-api
 
 # Test
 pytest
@@ -14,3 +13,4 @@ moto
 
 # Utils
 pylint
+twine
