@@ -362,3 +362,17 @@ def upload_formulas(cluster):
     client = cluster.instances[0].ssh_client
     client.put(src_salt_root, dst_salt_root, sudo=True)
     client.put(src_pillar_root, dst_pillar_root, sudo=True)
+
+
+def upload_pillar(cluster, name, data):
+    import os
+    import yaml
+    import tempfile
+
+    master = cluster.instances[0].ssh_client
+
+    with tempfile.NamedTemporaryFile('w') as f:
+        yaml.safe_dump(data, f, default_flow_style=False)
+        local = f.name
+        remote = "/srv/pillar/{}".format(name)
+        master.put(local, remote, sudo=True)
