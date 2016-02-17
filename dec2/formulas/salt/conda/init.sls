@@ -24,3 +24,13 @@ miniconda-pip:
     - unless: test -e {{ install_prefix }}/bin/pip
     - require:
       - cmd: miniconda-install
+
+/etc/profile.d/conda.sh:
+  file.managed:
+    - source: salt://conda/templates/conda.sh
+    - user: root
+    - group: root
+    - mode: 666
+    - template: jinja
+    - require:
+      - cmd: miniconda-install
