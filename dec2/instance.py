@@ -27,7 +27,7 @@ class Instance(object):
         self = cls(ip=instance.public_ip_address, uid=instance.id)
         return self
 
-    @retry(catch=(BadHostKeyException, AuthenticationException, SSHException, socket.error))
+    @retry(catch=(BadHostKeyException, AuthenticationException, SSHException, socket.error, TypeError))
     def check_ssh(self):
         logger.debug('Checking ssh connection for %s', self.ip)
         ssh = paramiko.SSHClient()
