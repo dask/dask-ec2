@@ -8,7 +8,24 @@ python:
 services:
   - docker
 
+env:
+  DOCKER_COMPOSE_VERSION: 1.6.0
+
 before_install:
+  # Download vagrant insecurekey
+  - mkdir -p ~/.vagrant.d/
+  - wget https://raw.githubusercontent.com/mitchellh/vagrant/master/keys/vagrant -O ~/.vagrant.d/insecure_private_key
+
+  # Setup docker compose
+  - sudo rm /usr/local/bin/docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
+  - pushd ci
+  - docker-compose up -d
+  - popd
+  - export TEST_CLUSTERFILE=$(pwd)/ci/cluster_docker.yaml
+
   # Install conda
   - wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
   - bash miniconda.sh -b -p $HOME/miniconda
@@ -26,6 +43,7 @@ before_install:
   - export AWS_SECRET_ACCESS_KEY=1
 
 install:
+  - which python
   - python setup.py sdist
   - pip install dist/*.tar.gz
 
