@@ -30,10 +30,7 @@ class Instance(object):
     @retry(catch=(BadHostKeyException, AuthenticationException, SSHException, socket.error, TypeError))
     def check_ssh(self):
         logger.debug('Checking ssh connection for %s', self.ip)
-        ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        keypair = os.path.expanduser(self.keypair)
-        ssh.connect(self.ip, port=self.port, username=self.username, key_filename=keypair)
+        self.ssh_client.exec_command("ls")
         return True
 
     def get_ssh_client(self):
