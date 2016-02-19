@@ -18,7 +18,7 @@ class Instance(object):
     def __init__(self, ip, uid=None, port=22, username=None, keypair=None):
         self.ip = ip
         self.uid = uid
-        self.port = 22
+        self.port = port
         self.username = username
         self.keypair = keypair
 
