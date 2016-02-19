@@ -12,6 +12,11 @@ env:
   DOCKER_COMPOSE_VERSION: 1.6.0
 
 before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y docker-engine
+  - sudo service docker stop
+  - sudo service docker start
+
   # Download vagrant insecurekey
   - mkdir -p ~/.vagrant.d/
   - wget https://raw.githubusercontent.com/mitchellh/vagrant/master/keys/vagrant -O ~/.vagrant.d/insecure_private_key
