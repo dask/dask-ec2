@@ -22,6 +22,8 @@ before_install:
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
   # Start docker containers
+  - docker version
+  - docker-compose version
   - pushd ci
   - docker build -t "dec2test" .
   - docker-compose up -d
