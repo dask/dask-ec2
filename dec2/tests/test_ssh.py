@@ -1,17 +1,9 @@
 import pytest
 
-from utils import remotetest, cluster, invoke, assert_all_true
+from utils import remotetest, cluster
 
 from dec2.ssh import SSHClient
 from dec2.exceptions import DEC2Exception
-
-
-@remotetest
-def test_ssh_ok(cluster):
-    response = cluster.check_ssh()
-    assert len(response) == len(cluster.instances)
-    for address, status in response.items():
-        assert status == True
 
 
 @remotetest

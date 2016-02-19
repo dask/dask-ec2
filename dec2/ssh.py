@@ -20,10 +20,11 @@ class SSHClient(object):
         self.host = host
         self.username = username
         self.password = password
+
         if pkey:
             if isinstance(pkey, paramiko.rsakey.RSAKey):
                 self.pkey = pkey
-            elif isinstance(pkey, str) and os.path.isfile(pkey):
+            elif isinstance(pkey, str) and os.path.isfile(os.path.expanduser(pkey)):
                 pkey = os.path.expanduser(pkey)
                 self.pkey = paramiko.RSAKey.from_private_key_file(pkey)
             else:

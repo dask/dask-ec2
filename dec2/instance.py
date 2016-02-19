@@ -19,8 +19,8 @@ class Instance(object):
         self.ip = ip
         self.uid = uid
         self.port = 22
-        self.username = None
-        self.keypair = None
+        self.username = username
+        self.keypair = keypair
 
     @classmethod
     def from_boto3_instance(cls, instance):
@@ -36,7 +36,7 @@ class Instance(object):
     def get_ssh_client(self):
         host = self.ip
         username = self.username
-        pkey = os.path.expanduser(self.keypair)
+        pkey = self.keypair
         port = self.port
         client = SSHClient(host, username=username, pkey=pkey, port=port)
         return client

@@ -68,7 +68,10 @@ class Cluster(object):
                 "Could not connect to salt server. Try `dec2 provision` and try again")
 
     def append(self, instance):
-        self.instances.append(instance)
+        if isinstance(instance, Instance):
+            self.instances.append(instance)
+        else:
+            raise DEC2Exception("Can only append dec2.Instance types to the cluster nodes")
 
     def set_username(self, username):
         for instance in self.instances:
@@ -91,3 +94,10 @@ class Cluster(object):
         for instance in self.instances:
             ret["instances"].append(instance.to_dict())
         return ret
+
+    def to_file(self, filepath):
+        with open(filepath, "w") as f:
+            yaml.safe_dump(self.to_dict(), f, default_flow_style=False)
+
+    def __repr__(self):
+        return str(self.to_dict())
