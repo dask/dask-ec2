@@ -13,7 +13,7 @@ env:
 
 before_install:
   - sudo apt-get -qq update
-  - sudo apt-get install -y --force-yes docker-engine
+  - sudo apt-get install -y --force-yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" docker-engine
   - sudo service docker stop
   - sudo service docker start
 
