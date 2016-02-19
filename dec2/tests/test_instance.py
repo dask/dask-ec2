@@ -1,9 +1,8 @@
 import pytest
+from moto import mock_ec2
 
 from dec2 import Instance
 from dec2.exceptions import DEC2Exception
-from moto import mock_ec2
-
 from utils import remotetest, cluster, driver
 
 
