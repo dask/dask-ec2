@@ -42,6 +42,11 @@ class Cluster(object):
             self.instances.append(Instance.from_dict(instance))
         return self
 
+    def get_head(self):
+        return self.instances[0]
+
+    head = property(get_head, None, None)
+
     def get_pepper_client(self):
         if not self._pepper:
             url = 'https://{}:8000'.format(self.instances[0].ip)
