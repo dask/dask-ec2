@@ -1,4 +1,5 @@
-from utils import *
+import pytest
+from utils import driver
 
 from moto import mock_ec2
 
