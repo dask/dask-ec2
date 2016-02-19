@@ -17,7 +17,6 @@ class Cluster(object):
 
     def __init__(self, instances=None):
         self._pepper = None
-        self._cmanager = None
         self.instances = instances or []
 
     @classmethod
