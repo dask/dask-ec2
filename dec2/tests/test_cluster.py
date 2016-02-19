@@ -1,9 +1,9 @@
 import pytest
+from moto import mock_ec2
 
 from dec2 import Cluster, Instance
 from dec2.exceptions import DEC2Exception
-
-from utils import remotetest, cluster
+from utils import remotetest, cluster, driver
 
 
 def test_cluster():
@@ -111,3 +111,30 @@ def test_check_ssh(cluster):
     assert len(response) == len(cluster.instances)
     for address, status in response.items():
         assert status == True
+
+
+@mock_ec2
+def test_from_boto3(driver):
+    from dec2.ec2 import DEFAULT_SG_GROUP_NAME
+    name = "test_launch"
+    ami = "ami-d05e75b8"
+    instance_type = "m3.2xlarge"
+    count = 5
+    keyname = "mykey"
+    keypair = None    # Skip check
+    volume_type = "gp2"
+    volume_size = 500
+    security_group = "another-sg"
+
+    driver.ec2.create_key_pair(KeyName=keyname)
+    instances = driver.launch(name=name,
+                              image_id=ami,
+                              instance_type=instance_type,
+                              count=count,
+                              keyname=keyname,
+                              security_group=DEFAULT_SG_GROUP_NAME,
+                              volume_type=volume_type,
+                              volume_size=volume_size,
+                              keypair=keypair)
+
+    instance = Cluster.from_boto3_instances(instances)
