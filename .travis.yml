@@ -65,4 +65,4 @@ install:
   - pip install dist/*.tar.gz
 
 script:
-  - py.test --cov=dec2 dec2/tests --cov-report term-missing --cov-report html -s -vv
+  - py.test --pyargs dec2 --cov=dec2 --cov-report term-missing --cov-report html -s -vv
