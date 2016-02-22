@@ -11,6 +11,11 @@ services:
 env:
   DOCKER_COMPOSE_VERSION: 1.6.0
 
+addons:
+  hosts:
+    - ci_head_1
+    - ci_compute_1
+
 before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y --force-yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" docker-engine
@@ -35,7 +40,6 @@ before_install:
   - docker-compose up -d
   - docker ps
   - docker images
-  - sudo echo "127.0.0.1  ci_head_1 ci_compute_1" >> /etc/hosts
   - popd
   - export TEST_CLUSTERFILE=$(pwd)/ci/cluster_docker.yaml
 
