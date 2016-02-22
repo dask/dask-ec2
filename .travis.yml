@@ -20,6 +20,7 @@ before_install:
   # Download vagrant insecurekey
   - mkdir -p ~/.vagrant.d/
   - wget https://raw.githubusercontent.com/mitchellh/vagrant/master/keys/vagrant -O ~/.vagrant.d/insecure_private_key
+  - chmod 600 ~/.vagrant.d/insecure_private_key
 
   # Setup docker compose
   - sudo rm /usr/local/bin/docker-compose
@@ -32,6 +33,8 @@ before_install:
   - pushd ci
   - docker build -t "dec2test" .
   - docker-compose up -d
+  - docker ps
+  - docker images
   - popd
   - export TEST_CLUSTERFILE=$(pwd)/ci/cluster_docker.yaml
 
