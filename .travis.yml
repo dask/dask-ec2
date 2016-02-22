@@ -35,6 +35,7 @@ before_install:
   - docker-compose up -d
   - docker ps
   - docker images
+  - sed -i "127.0.0.1  ci_head_1, ci_compute_1" /etc/hosts
   - popd
   - export TEST_CLUSTERFILE=$(pwd)/ci/cluster_docker.yaml
 
