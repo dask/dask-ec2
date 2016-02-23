@@ -1,6 +1,8 @@
+from __future__ import absolute_import, print_function, division
+
 import pytest
 
-from utils import remotetest, cluster, invoke, assert_all_true
+from ..utils import remotetest, cluster, invoke, assert_all_true
 
 
 @remotetest

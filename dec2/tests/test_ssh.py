@@ -1,9 +1,10 @@
-import pytest
+from __future__ import absolute_import, print_function, division
 
-from utils import remotetest, cluster
+import pytest
 
 from dec2.ssh import SSHClient
 from dec2.exceptions import DEC2Exception
+from .utils import remotetest, cluster
 
 
 @remotetest

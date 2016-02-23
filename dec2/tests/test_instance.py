@@ -1,9 +1,12 @@
+from __future__ import absolute_import, print_function, division
+
 import pytest
+
 from moto import mock_ec2
 
 from dec2 import Instance
 from dec2.exceptions import DEC2Exception
-from utils import remotetest, cluster, driver
+from .utils import remotetest, cluster, driver
 
 
 def test_instance():
