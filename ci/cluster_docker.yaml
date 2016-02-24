@@ -1,0 +1,11 @@
+instances:
+- ip: ci_head_1
+  keypair: ~/.vagrant.d/insecure_private_key
+  port: 2222
+  username: root
+  uid: 1
+- ip: ci_compute_1
+  keypair: ~/.vagrant.d/insecure_private_key
+  port: 2223
+  username: root
+  uid: 1

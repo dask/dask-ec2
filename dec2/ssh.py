@@ -7,6 +7,8 @@ import logging
 import posixpath
 from socket import gaierror as sock_gaierror, error as sock_error
 
+from .exceptions import DEC2Exception
+
 import paramiko
 
 logger = logging.getLogger(__name__)
@@ -14,15 +16,21 @@ logger = logging.getLogger(__name__)
 
 class SSHClient(object):
 
-    def __init__(self, host, username=None, password=None, pkey=None, port=22, timeout=15):
+    def __init__(self, host, username=None, password=None, pkey=None, port=22, timeout=15, connect=True):
         self.host = host
         self.username = username
         self.password = password
-        pkey = os.path.expanduser(pkey)
-        if os.path.isfile(pkey):
-            self.pkey = paramiko.RSAKey.from_private_key_file(pkey)
+
+        if pkey:
+            if isinstance(pkey, paramiko.rsakey.RSAKey):
+                self.pkey = pkey
+            elif isinstance(pkey, str) and os.path.isfile(os.path.expanduser(pkey)):
+                pkey = os.path.expanduser(pkey)
+                self.pkey = paramiko.RSAKey.from_private_key_file(pkey)
+            else:
+                raise DEC2Exception("pkey argument should be filepath or paramiko.rsakey.RSAKey")
         else:
-            self.pkey = pkey
+            self.pkey = None
         self.port = port
         self.timeout = timeout
 
@@ -30,7 +38,8 @@ class SSHClient(object):
         self.client.set_missing_host_key_policy(paramiko.MissingHostKeyPolicy())
         self._sftp = None
 
-        self.connect()
+        if connect:
+            self.connect()
 
     def connect(self):
         """Connect to host
@@ -42,16 +51,14 @@ class SSHClient(object):
                                 port=self.port,
                                 pkey=self.pkey,
                                 timeout=self.timeout)
-        except sock_gaierror as e:
-            raise Exception("Unknown host '%s'" % self.host)
-        except sock_error as e:
-            raise Exception("Error connecting to host '%s:%s'\n%s" % (self.host, self.port, e))
         except paramiko.AuthenticationException as e:
-            msg = "Host is '%s:%s'"
-            raise Exception("Authentication Error to host '%s'" % self.host)
+            raise DEC2Exception("Authentication Error to host '%s'" % self.host)
+        except sock_gaierror as e:
+            raise DEC2Exception("Unknown host '%s'" % self.host)
+        except sock_error as e:
+            raise DEC2Exception("Error connecting to host '%s:%s'\n%s" % (self.host, self.port, e))
         except paramiko.SSHException as e:
-            msg = "General SSH error - %s" % e
-            raise Exception(msg)
+            raise DEC2Exception("General SSH error - %s" % e)
 
     def close(self):
         self.client.close()
@@ -75,8 +82,8 @@ class SSHClient(object):
         while not (channel.recv_ready() or channel.closed or channel.exit_status_ready()):
             time.sleep(.2)
 
-        ret = {'stdout': stdout.read().strip(),
-               'stderr': stderr.read().strip(),
+        ret = {'stdout': stdout.read().strip().decode('utf-8'),
+               'stderr': stderr.read().strip().decode('utf-8'),
                'exit_code': channel.recv_exit_status()}
         return ret
 
@@ -94,20 +101,21 @@ class SSHClient(object):
     sftp = property(get_sftp, None, None)
 
     def mkdir(self, path, mode=511):
-        if self.check_dir(path):
-            return True
+        """Create a directory including all needed parents
+        """
+        if self.dir_exists(path):
+            return
         else:
             dirname, basename = posixpath.split(path)
-            if self.check_dir(dirname):
+            if self.dir_exists(dirname):
                 logger.debug("Creating directory %s mode=%s", path, mode)
                 self.sftp.mkdir(basename, mode=mode)    # sub-directory missing, so created it
                 self.sftp.chdir(basename)
             else:
-                # Make parent directories:
-                self.mkdir(dirname)
-        return True
+                self.mkdir(dirname)    # Make parent directories
+                self.mkdir(path)
 
-    def check_dir(self, path):
+    def dir_exists(self, path):
         try:
             self.sftp.chdir(path)
             return True

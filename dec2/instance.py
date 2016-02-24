@@ -18,9 +18,9 @@ class Instance(object):
     def __init__(self, ip, uid=None, port=22, username=None, keypair=None):
         self.ip = ip
         self.uid = uid
-        self.port = 22
-        self.username = None
-        self.keypair = None
+        self.port = port
+        self.username = username
+        self.keypair = keypair
 
     @classmethod
     def from_boto3_instance(cls, instance):
@@ -30,16 +30,13 @@ class Instance(object):
     @retry(catch=(BadHostKeyException, AuthenticationException, SSHException, socket.error, TypeError))
     def check_ssh(self):
         logger.debug('Checking ssh connection for %s', self.ip)
-        ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        keypair = os.path.expanduser(self.keypair)
-        ssh.connect(self.ip, port=self.port, username=self.username, key_filename=keypair)
+        self.ssh_client.exec_command("ls")
         return True
 
     def get_ssh_client(self):
         host = self.ip
         username = self.username
-        pkey = os.path.expanduser(self.keypair)
+        pkey = self.keypair
         port = self.port
         client = SSHClient(host, username=username, pkey=pkey, port=port)
         return client

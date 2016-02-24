@@ -1,9 +1,12 @@
-from utils import *
+from __future__ import absolute_import, print_function, division
+
+import pytest
 
 from moto import mock_ec2
 
 from dec2.ec2 import DEFAULT_SG_GROUP_NAME
 from dec2.exceptions import DEC2Exception
+from .utils import driver
 
 # Some default values
 name = "test_launch"
