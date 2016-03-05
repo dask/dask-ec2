@@ -110,8 +110,13 @@ def cli(ctx):
               show_default=True,
               required=False,
               help="Install Dask.Distributed in the cluster")
+@click.option("--nprocs",
+              default=1,
+              show_default=True,
+              required=False,
+              help="Number of worker processes")
 def up(ctx, name, keyname, keypair, region_name, ami, username, instance_type, count,
-       security_group, volume_type, volume_size, filepath, ssh_check, _provision, dask):
+       security_group, volume_type, volume_size, filepath, ssh_check, _provision, dask, nprocs):
     import os
     import yaml
     from ..ec2 import EC2
@@ -155,7 +160,7 @@ def up(ctx, name, keyname, keypair, region_name, ami, username, instance_type, c
 
     if _provision and dask:
         from .daskd import dask_install
-        ctx.invoke(dask_install, filepath=filepath)
+        ctx.invoke(dask_install, filepath=filepath, nprocs=nprocs)
 
 
 @cli.command(short_help="Destroy cluster")
