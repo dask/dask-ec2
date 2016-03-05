@@ -19,7 +19,7 @@ from ..salt import upload_pillar
               default=1,
               show_default=True,
               required=False,
-              help="Number of worker processes")
+              help="Number of processes per worker")
 @click.pass_context
 def dask(ctx, filepath, nprocs):
     if ctx.invoked_subcommand is None:
@@ -44,7 +44,7 @@ def dask(ctx, filepath, nprocs):
               default=1,
               show_default=True,
               required=False,
-              help="Number of worker processes")
+              help="Number of processes per worker")
 def dask_install(ctx, filepath, shell, nprocs):
     cluster = Cluster.from_filepath(filepath)
     upload_pillar(cluster, "dask.sls", {"dworker": {"nprocs": nprocs}})
