@@ -37,7 +37,7 @@ def dask(ctx, filepath, nprocs):
               help="Filepath to the instances metadata")
 @click.option("--shell/--no-shell",
               is_flag=True,
-              default=True,
+              default=False,
               show_default=True,
               help="Start or not a python shell when installation is finished")
 @click.option("--nprocs",
@@ -64,6 +64,7 @@ def dask_install(ctx, filepath, shell, nprocs):
         sys.exit(1)
 
     click.echo("Dask.Distributed Installation succeeded")
+    click.echo("")
     ctx.invoke(dask_address, filepath=filepath)
 
     if shell:
@@ -83,7 +84,12 @@ def dask_install(ctx, filepath, shell, nprocs):
 def dask_address(ctx, filepath):
     cluster = Cluster.from_filepath(filepath)
     address = "{}:{}".format(cluster.instances[0].ip, 8786)
-    click.echo("Scheduler Address: {}".format(address))
+    click.echo("Scheduler address is: {}".format(address))
+    click.echo("To connect to the distributed scheduler either run: `dec2 dask-distributed shell` or ")
+    click.echo("SSH to the head node: `dec2 ssh`.")
+    click.echo("Once in the head node open a python shell `python` and connect to the dask distributed cluster:")
+    click.echo(">>> from distributed import Executor")
+    click.echo(">>> e = Executor('127.0.0.1:8786')")
 
 
 @dask.command(
