@@ -141,11 +141,7 @@ def up(ctx, name, keyname, keypair, region_name, ami, username, instance_type, c
         yaml.safe_dump(cluster.to_dict(), f, default_flow_style=False)
 
     if _provision:
-        ctx.invoke(provision, filepath=filepath)
-
-    if _provision and dask:
-        from .daskd import dask_install
-        ctx.invoke(dask_install, filepath=filepath, nprocs=nprocs)
+        ctx.invoke(provision, filepath=filepath, dask=dask, nprocs=nprocs)
 
 
 @cli.command(short_help="Destroy cluster")
@@ -238,7 +234,18 @@ def ssh(ctx, node, filepath):
               default=True,
               show_default=True,
               help="Upload the salt formulas")
-def provision(ctx, filepath, ssh_check, master, minions, upload):
+@click.option("--dask/--no-dask",
+              "dask",
+              default=True,
+              show_default=True,
+              required=False,
+              help="Install Dask.Distributed in the cluster")
+@click.option("--nprocs",
+              default=1,
+              show_default=True,
+              required=False,
+              help="Number of processes per worker")
+def provision(ctx, filepath, ssh_check, master, minions, upload, dask, nprocs):
     import six
     from ..salt import install_salt_master, install_salt_minion, upload_formulas, upload_pillar
 
@@ -263,6 +270,9 @@ def provision(ctx, filepath, ssh_check, master, minions, upload):
         upload_formulas(cluster)
         click.echo("Uploading conda settings")
         upload_pillar(cluster, "conda.sls", {"conda": {"pyversion": 2 if six.PY2 else 3}})
+    if dask:
+        from .daskd import dask_install
+        ctx.invoke(dask_install, filepath=filepath, nprocs=nprocs)
 
 
 def print_state(output):

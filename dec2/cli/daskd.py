@@ -49,7 +49,6 @@ def dask_install(ctx, filepath, shell, nprocs):
     cluster = Cluster.from_filepath(filepath)
     upload_pillar(cluster, "dask.sls", {"dworker": {"nprocs": nprocs}})
 
-
     click.echo("Installing scheduler")
     cluster.pepper.local("node-0", "grains.append", ["roles", "dask.distributed.scheduler"])
     output = cluster.salt_call("node-0", "state.sls", ["dask.distributed.scheduler"])
