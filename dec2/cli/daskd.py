@@ -84,12 +84,31 @@ def dask_install(ctx, filepath, shell, nprocs):
 def dask_address(ctx, filepath):
     cluster = Cluster.from_filepath(filepath)
     address = "{}:{}".format(cluster.instances[0].ip, 8786)
-    click.echo("Scheduler address is: {}".format(address))
-    click.echo("To connect to the distributed scheduler either run: `dec2 dask-distributed shell` or ")
-    click.echo("SSH to the head node: `dec2 ssh`.")
-    click.echo("Once in the head node open a python shell `python` and connect to the dask distributed cluster:")
-    click.echo(">>> from distributed import Executor")
-    click.echo(">>> e = Executor('127.0.0.1:8786')")
+    click.echo("""Scheduler Address: {0}
+
+To connect from the cluster
+---------------------------
+
+dec2 ssh  # ssh into head node
+ipython  # start ipython shell
+
+from distributed import Executor, s3, progress
+e = Executor('127.0.0.1:8786')  # Connect to scheduler running on the head node
+
+To connect locally
+------------------
+
+Note: this requires you to have identical environments on your local machine and cluster.
+
+ipython  # start ipython shell
+
+from distributed import Executor, s3, progress
+e = Executor({0})  # Connect to scheduler running on the head node
+
+To destroy
+----------
+
+dec2 destroy""".format(address))
 
 
 @dask.command(
