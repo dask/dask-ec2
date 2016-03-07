@@ -93,11 +93,6 @@ def cli(ctx):
               show_default=True,
               required=False,
               help="File to save the metadata")
-@click.option("--ssh-check/--no-ssh-check",
-              default=True,
-              show_default=True,
-              required=False,
-              help="Whether to check or not for SSH connection")
 @click.option("--provision/--no-provision",
               "_provision",
               default=True,
@@ -110,8 +105,13 @@ def cli(ctx):
               show_default=True,
               required=False,
               help="Install Dask.Distributed in the cluster")
+@click.option("--nprocs",
+              default=1,
+              show_default=True,
+              required=False,
+              help="Number of processes per worker")
 def up(ctx, name, keyname, keypair, region_name, ami, username, instance_type, count,
-       security_group, volume_type, volume_size, filepath, ssh_check, _provision, dask):
+       security_group, volume_type, volume_size, filepath, _provision, dask, nprocs):
     import os
     import yaml
     from ..ec2 import EC2
@@ -140,22 +140,8 @@ def up(ctx, name, keyname, keypair, region_name, ami, username, instance_type, c
     with open(filepath, "w") as f:
         yaml.safe_dump(cluster.to_dict(), f, default_flow_style=False)
 
-    if ssh_check:
-        click.echo("Checking SSH connection to nodes")
-        cluster = Cluster.from_filepath(filepath)
-        info = cluster.check_ssh()
-        data = [["Node IP", "SSH check"]]
-        for ip, status in info.items():
-            data.append([ip, status])
-        t = Table(data, 1)
-        t.write()
-
     if _provision:
-        ctx.invoke(provision, filepath=filepath)
-
-    if _provision and dask:
-        from .daskd import dask_install
-        ctx.invoke(dask_install, filepath=filepath)
+        ctx.invoke(provision, filepath=filepath, dask=dask, nprocs=nprocs)
 
 
 @cli.command(short_help="Destroy cluster")
@@ -228,6 +214,11 @@ def ssh(ctx, node, filepath):
               show_default=True,
               required=False,
               help="Filepath to the instances metadata")
+@click.option("--ssh-check/--no-ssh-check",
+              default=True,
+              show_default=True,
+              required=False,
+              help="Whether to check or not for SSH connection")
 @click.option("--master/--no-master",
               is_flag=True,
               default=True,
@@ -243,11 +234,31 @@ def ssh(ctx, node, filepath):
               default=True,
               show_default=True,
               help="Upload the salt formulas")
-def provision(ctx, filepath, master, minions, upload):
+@click.option("--dask/--no-dask",
+              "dask",
+              default=True,
+              show_default=True,
+              required=False,
+              help="Install Dask.Distributed in the cluster")
+@click.option("--nprocs",
+              default=1,
+              show_default=True,
+              required=False,
+              help="Number of processes per worker")
+def provision(ctx, filepath, ssh_check, master, minions, upload, dask, nprocs):
     import six
     from ..salt import install_salt_master, install_salt_minion, upload_formulas, upload_pillar
 
     cluster = Cluster.from_filepath(filepath)
+    if ssh_check:
+        click.echo("Checking SSH connection to nodes")
+        cluster = Cluster.from_filepath(filepath)
+        info = cluster.check_ssh()
+        data = [["Node IP", "SSH check"]]
+        for ip, status in info.items():
+            data.append([ip, status])
+        t = Table(data, 1)
+        t.write()
     if master:
         click.echo("Bootstraping salt master")
         install_salt_master(cluster)
@@ -259,6 +270,9 @@ def provision(ctx, filepath, master, minions, upload):
         upload_formulas(cluster)
         click.echo("Uploading conda settings")
         upload_pillar(cluster, "conda.sls", {"conda": {"pyversion": 2 if six.PY2 else 3}})
+    if dask:
+        from .daskd import dask_install
+        ctx.invoke(dask_install, filepath=filepath, nprocs=nprocs)
 
 
 def print_state(output):

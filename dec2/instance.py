@@ -9,6 +9,7 @@ from paramiko.ssh_exception import BadHostKeyException, AuthenticationException,
 
 from .ssh import SSHClient
 from .utils import retry
+from .exceptions import DEC2Exception
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +28,7 @@ class Instance(object):
         self = cls(ip=instance.public_ip_address, uid=instance.id)
         return self
 
-    @retry(catch=(BadHostKeyException, AuthenticationException, SSHException, socket.error, TypeError))
+    @retry(catch=(BadHostKeyException, AuthenticationException, SSHException, socket.error, TypeError, DEC2Exception))
     def check_ssh(self):
         logger.debug('Checking ssh connection for %s', self.ip)
         self.ssh_client.exec_command("ls")

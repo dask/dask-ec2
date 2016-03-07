@@ -4,6 +4,7 @@ import click
 
 from .main import cli, print_state
 from ..cluster import Cluster
+from ..salt import upload_pillar
 
 
 @cli.group('dask-distributed', invoke_without_command=True, short_help='dask.distributed option')
@@ -14,10 +15,15 @@ from ..cluster import Cluster
               show_default=True,
               required=False,
               help="Filepath to the instances metadata")
+@click.option("--nprocs",
+              default=1,
+              show_default=True,
+              required=False,
+              help="Number of processes per worker")
 @click.pass_context
-def dask(ctx, filepath):
+def dask(ctx, filepath, nprocs):
     if ctx.invoked_subcommand is None:
-        ctx.invoke(dask_install, filepath=filepath)
+        ctx.invoke(dask_install, filepath=filepath, nprocs=nprocs)
 
 
 @dask.command("install", short_help="Start a dask.distributed cluster")
@@ -31,11 +37,17 @@ def dask(ctx, filepath):
               help="Filepath to the instances metadata")
 @click.option("--shell/--no-shell",
               is_flag=True,
-              default=True,
+              default=False,
               show_default=True,
               help="Start or not a python shell when installation is finished")
-def dask_install(ctx, filepath, shell):
+@click.option("--nprocs",
+              default=1,
+              show_default=True,
+              required=False,
+              help="Number of processes per worker")
+def dask_install(ctx, filepath, shell, nprocs):
     cluster = Cluster.from_filepath(filepath)
+    upload_pillar(cluster, "dask.sls", {"dworker": {"nprocs": nprocs}})
 
     click.echo("Installing scheduler")
     cluster.pepper.local("node-0", "grains.append", ["roles", "dask.distributed.scheduler"])
@@ -52,6 +64,7 @@ def dask_install(ctx, filepath, shell):
         sys.exit(1)
 
     click.echo("Dask.Distributed Installation succeeded")
+    click.echo("")
     ctx.invoke(dask_address, filepath=filepath)
 
     if shell:
@@ -71,7 +84,31 @@ def dask_install(ctx, filepath, shell):
 def dask_address(ctx, filepath):
     cluster = Cluster.from_filepath(filepath)
     address = "{}:{}".format(cluster.instances[0].ip, 8786)
-    click.echo("Scheduler Address: {}".format(address))
+    click.echo("""Scheduler Address: {0}
+
+To connect from the cluster
+---------------------------
+
+dec2 ssh  # ssh into head node
+ipython  # start ipython shell
+
+from distributed import Executor, s3, progress
+e = Executor('127.0.0.1:8786')  # Connect to scheduler running on the head node
+
+To connect locally
+------------------
+
+Note: this requires you to have identical environments on your local machine and cluster.
+
+ipython  # start ipython shell
+
+from distributed import Executor, s3, progress
+e = Executor({0})  # Connect to scheduler running on the head node
+
+To destroy
+----------
+
+dec2 destroy""".format(address))
 
 
 @dask.command(
