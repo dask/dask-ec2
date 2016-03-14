@@ -18,6 +18,13 @@ miniconda-install:
     - require:
       - cmd: miniconda-download
 
+remove-anconda:
+  # LOLZ
+  cmd.run:
+    - name: {{ install_prefix }}/bin/conda remove anaconda || true
+    - require:
+      - cmd: miniconda-install
+
 miniconda-pip:
   cmd.run:
     - name: {{ install_prefix }}/bin/conda install pip -y -q

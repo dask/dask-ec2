@@ -17,3 +17,9 @@ distributed-install:
     - bin_env: {{ install_prefix }}/bin/pip
     - require:
       - sls: conda
+
+update-pandas:
+  cmd.run:
+    - name: {{ install_prefix }}/bin/conda update pandas
+    - require:
+      - pip: distributed-install
