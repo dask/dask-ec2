@@ -99,6 +99,11 @@ def cli(ctx):
               show_default=True,
               required=False,
               help="Provision salt on the nodes")
+@click.option("--anaconda/--no-anaconda", "anaconda_",
+              is_flag=True,
+              default=True,
+              show_default=True,
+              help="Bootstrap anaconda")
 @click.option("--dask/--no-dask",
               "dask",
               default=True,
@@ -111,7 +116,7 @@ def cli(ctx):
               required=False,
               help="Number of processes per worker")
 def up(ctx, name, keyname, keypair, region_name, ami, username, instance_type, count,
-       security_group, volume_type, volume_size, filepath, _provision, dask, nprocs):
+       security_group, volume_type, volume_size, filepath, _provision, anaconda_, dask, nprocs):
     import os
     import yaml
     from ..ec2 import EC2
@@ -141,7 +146,7 @@ def up(ctx, name, keyname, keypair, region_name, ami, username, instance_type, c
         yaml.safe_dump(cluster.to_dict(), f, default_flow_style=False)
 
     if _provision:
-        ctx.invoke(provision, filepath=filepath, dask=dask, nprocs=nprocs)
+        ctx.invoke(provision, filepath=filepath, anaconda_=anaconda_, dask=dask, nprocs=nprocs)
 
 
 @cli.command(short_help="Destroy cluster")
@@ -234,6 +239,11 @@ def ssh(ctx, node, filepath):
               default=True,
               show_default=True,
               help="Upload the salt formulas")
+@click.option("--anaconda/--no-anaconda", "anaconda_",
+              is_flag=True,
+              default=True,
+              show_default=True,
+              help="Bootstrap anaconda")
 @click.option("--dask/--no-dask",
               "dask",
               default=True,
@@ -245,7 +255,7 @@ def ssh(ctx, node, filepath):
               show_default=True,
               required=False,
               help="Number of processes per worker")
-def provision(ctx, filepath, ssh_check, master, minions, upload, dask, nprocs):
+def provision(ctx, filepath, ssh_check, master, minions, upload, anaconda_, dask, nprocs):
     import six
     from ..salt import install_salt_master, install_salt_minion, upload_formulas, upload_pillar
 
@@ -270,9 +280,29 @@ def provision(ctx, filepath, ssh_check, master, minions, upload, dask, nprocs):
         upload_formulas(cluster)
         click.echo("Uploading conda settings")
         upload_pillar(cluster, "conda.sls", {"conda": {"pyversion": 2 if six.PY2 else 3}})
+    if anaconda_:
+        ctx.invoke(anaconda, filepath=filepath)
     if dask:
         from .daskd import dask_install
         ctx.invoke(dask_install, filepath=filepath, nprocs=nprocs)
+
+
+@cli.command(short_help="Provision anaconda")
+@click.pass_context
+@click.option("--file",
+              "filepath",
+              type=click.Path(exists=True),
+              envvar="CLUSTERFILE",
+              default="cluster.yaml",
+              show_default=True,
+              required=False,
+              help="Filepath to the instances metadata")
+def anaconda(ctx, filepath):
+    cluster = Cluster.from_filepath(filepath)
+    output = cluster.salt_call("*", "state.sls", ["conda"])
+    response = print_state(output)
+    if not response.aggregated_success():
+        sys.exit(1)
 
 
 def print_state(output):
