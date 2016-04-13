@@ -47,7 +47,13 @@ def dask(ctx, filepath, nprocs):
               help="Number of processes per worker")
 def dask_install(ctx, filepath, shell, nprocs):
     cluster = Cluster.from_filepath(filepath)
-    upload_pillar(cluster, "dask.sls", {"dworker": {"nprocs": nprocs}})
+    scheduler_public_ip = cluster.instances[0].ip
+    upload_pillar(cluster, "dask.sls", {"dask": {
+                                            "scheduler_public_ip": scheduler_public_ip,
+                                            "dworker": {
+                                                "nprocs": nprocs
+                                            }
+                                        }})
 
     click.echo("Installing scheduler")
     cluster.pepper.local("node-0", "grains.append", ["roles", "dask.distributed.scheduler"])

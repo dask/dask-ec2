@@ -10,6 +10,12 @@ dask-install:
     - require:
       - sls: conda
 
+bokeh-install:
+  cmd.run:
+    - name: {{ install_prefix }}/bin/conda install bokeh
+    - require:
+      - sls: conda
+
 distributed-install:
   pip.installed:
     - name: distributed
