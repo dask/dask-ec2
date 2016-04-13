@@ -282,8 +282,8 @@ def async_upload(results, instance, local, remote):
 
 
 def install_salt_minion(cluster):
-    dec2_src = src_dir = os.path.realpath(os.path.dirname(dec2.__file__))
-    templates_src = src_dir = os.path.join(dec2_src, "templates")
+    dec2_src = os.path.realpath(os.path.dirname(dec2.__file__))
+    templates_src = os.path.join(dec2_src, "templates")
 
     logger.debug("Installing salt-minion on all the nodes")
     results, threads = {}, []
