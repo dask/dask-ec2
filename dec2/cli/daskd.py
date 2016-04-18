@@ -151,3 +151,22 @@ def dask_shell(ctx, filepath):
     dask_shell_py = os.path.join(dec2_src, "cli", "dask_shell.py")
     cmd = [shell, "-i", dask_shell_py]
     subprocess.call(cmd)
+
+
+@dask.command(
+    "ui",
+    short_help=
+    "Open a web browser pointing to the Dask UI")
+@click.pass_context
+@click.option("--file",
+              "filepath",
+              type=click.Path(exists=True),
+              default="cluster.yaml",
+              show_default=True,
+              required=False,
+              help="Filepath to the instances metadata")
+def open_ui(ctx, filepath):
+    import webbrowser
+    cluster = Cluster.from_filepath(filepath)
+    address = "{}:{}/status".format(cluster.instances[0].ip, 8787)
+    webbrowser.open(address, new=2)
