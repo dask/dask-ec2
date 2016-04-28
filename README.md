@@ -5,9 +5,9 @@ Launch EC2 instances for `dask.distributed`
 
 ## Usage
 
-**Credentials:** `dec2` uses [`boto3`](http://boto3.readthedocs.org/en/latest/index.html) so you can set your AWS credentials using [Environment
-Variables](http://boto3.readthedocs.org/en/latest/guide/configuration.html#environment-variables)
-or [Configuration Files](http://boto3.readthedocs.org/en/latest/guide/configuration.html#configuration-files).
+**Credentials:** `dec2` uses [`boto3`](http://boto3.readthedocs.io/en/latest/index.html) so you can set your AWS credentials using [Environment
+Variables](http://boto3.readthedocs.io/en/latest/guide/configuration.html#environment-variables)
+or [Configuration Files](http://boto3.readthedocs.io/en/latest/guide/configuration.html#configuration-files).
 
 There is some CLI arguments
 ```bash
