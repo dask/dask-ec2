@@ -122,7 +122,7 @@ def cli(ctx):
               required=False,
               help="Number of processes per worker")
 def up(ctx, name, keyname, keypair, region_name, ami, username, instance_type, count,
-       security_group, volume_type, volume_size, filepath, _provision, anaconda_, dask, nprocs):
+       security_group, volume_type, volume_size, filepath, _provision, anaconda_, dask, notebook, nprocs):
     import os
     import yaml
     from ..ec2 import EC2
