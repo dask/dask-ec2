@@ -22,6 +22,7 @@ def notebook(ctx, filepath):
 
 
 @notebook.command("install", short_help='Provision the Jupyter notebook')
+@click.pass_context
 def notebook_install(ctx, filepath):
     click.echo("Installing Jupyter notebook on the head node")
     cluster = Cluster.from_filepath(filepath)
