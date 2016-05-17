@@ -110,6 +110,12 @@ def cli(ctx):
               show_default=True,
               required=False,
               help="Install Dask.Distributed in the cluster")
+@click.option("--notebook/--no-notebook",
+              "notebook",
+              default=True,
+              show_default=True,
+              required=False,
+              help="Start a Jupyter Notebook in the head node")
 @click.option("--nprocs",
               default=1,
               show_default=True,
@@ -125,7 +131,6 @@ def up(ctx, name, keyname, keypair, region_name, ami, username, instance_type, c
         if not click.confirm("A file named {} already exists, proceding will overwrite this file. Continue?".format(filepath)):
             click.echo("Not doing anything")
             sys.exit(0)
-
 
     driver = EC2(region=region_name)
     click.echo("Launching nodes")
@@ -146,7 +151,7 @@ def up(ctx, name, keyname, keypair, region_name, ami, username, instance_type, c
         yaml.safe_dump(cluster.to_dict(), f, default_flow_style=False)
 
     if _provision:
-        ctx.invoke(provision, filepath=filepath, anaconda_=anaconda_, dask=dask, nprocs=nprocs)
+        ctx.invoke(provision, filepath=filepath, anaconda_=anaconda_, dask=dask, notebook=notebook, nprocs=nprocs)
 
 
 @cli.command(short_help="Destroy cluster")
@@ -250,12 +255,18 @@ def ssh(ctx, node, filepath):
               show_default=True,
               required=False,
               help="Install Dask.Distributed in the cluster")
+@click.option("--notebook/--no-notebook",
+              "notebook",
+              default=True,
+              show_default=True,
+              required=False,
+              help="Start a Jupyter Notebook in the head node")
 @click.option("--nprocs",
               default=1,
               show_default=True,
               required=False,
               help="Number of processes per worker")
-def provision(ctx, filepath, ssh_check, master, minions, upload, anaconda_, dask, nprocs):
+def provision(ctx, filepath, ssh_check, master, minions, upload, anaconda_, dask, notebook, nprocs):
     import six
     from ..salt import install_salt_master, install_salt_minion, upload_formulas, upload_pillar
 
@@ -285,6 +296,8 @@ def provision(ctx, filepath, ssh_check, master, minions, upload, anaconda_, dask
     if dask:
         from .daskd import dask_install
         ctx.invoke(dask_install, filepath=filepath, nprocs=nprocs)
+    if notebook:
+        ctx.invoke(notebook_install, filepath=filepath)
 
 
 @cli.command(short_help="Provision anaconda")
@@ -324,3 +337,4 @@ def print_state(output):
 
 
 from .daskd import *
+from .notebook import *

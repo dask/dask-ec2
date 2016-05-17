@@ -2,6 +2,7 @@
 
 include:
   - conda
+  - system.base
 
 dask-install:
   pip.installed:
@@ -12,7 +13,7 @@ dask-install:
 
 bokeh-install:
   cmd.run:
-    - name: {{ install_prefix }}/bin/conda install bokeh
+    - name: {{ install_prefix }}/bin/conda install bokeh -y -q
     - require:
       - sls: conda
 
