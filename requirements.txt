@@ -3,7 +3,6 @@ click
 paramiko
 boto3
 pyyaml
-salt-pepper
 
 # Test
 pytest

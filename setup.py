@@ -30,4 +30,4 @@ setup(name='dec2',
         [console_scripts]
         dec2=dec2.cli.main:start
       """,
-      install_requires=["six", "click", "paramiko", "boto3", "pyyaml", "salt-pepper"])
+      install_requires=["six", "click", "paramiko", "boto3", "pyyaml"])
