@@ -89,8 +89,13 @@ def dask_install(ctx, filepath, shell, nprocs):
               help="Filepath to the instances metadata")
 def dask_address(ctx, filepath):
     cluster = Cluster.from_filepath(filepath)
-    address = "{}:{}".format(cluster.instances[0].ip, 8786)
-    click.echo("""Scheduler Address: {0}
+    address = cluster.instances[0].ip
+    click.echo("""
+
+Addresses
+---------
+Web Interface:    http://{0}:8787/status
+TCP Interface:           {0}:8786
 
 To connect from the cluster
 ---------------------------
@@ -114,7 +119,7 @@ e = Executor({0})  # Connect to scheduler running on the head node
 To destroy
 ----------
 
-dec2 destroy""".format(address))
+dec2 destroy""".format(address).lstrip())
 
 
 @dask.command(
