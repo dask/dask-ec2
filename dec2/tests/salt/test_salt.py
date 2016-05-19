@@ -14,6 +14,7 @@ def test_ssh(cluster):
 
 
 @remotetest
+@pytest.mark.skip(reason="test is broken")
 def test_provision_salt(cluster):
     invoke("provision")
     response = cluster.salt_call("*", "test.ping")["return"][0]
