@@ -30,6 +30,8 @@ def notebook_install(ctx, filepath):
     response = print_state(output)
     if not response.aggregated_success():
         sys.exit(1)
+    click.echo("Jupyter notebook available at http://%s:8888/" %
+               cluster.instances[0].ip)
 
 
 @notebook.command("open", short_help="Open a web browser pointing to the Notebook UI")
