@@ -1,18 +1,36 @@
-# DEC2
+# dec2
 
-Launch EC2 instances for `dask.distributed`
+Easily launch a cluster on Amazon EC2 configured with `dask.distributed`,
+Jupyter Notebooks, and Anaconda.
 
+## Installation
+
+You can install `dec2` and its dependencies from the
+[conda-forge](https://conda-forge.github.io/>) repository using
+[conda](https://www.continuum.io/downloads):
+
+```bash
+$ conda install dec2 -c conda-forge
+```
+
+You can also install `dec2` using pip:
+
+```bash
+$ pip install dec2
+```
 
 ## Usage
 
-**Credentials:** `dec2` uses [`boto3`](http://boto3.readthedocs.io/en/latest/index.html) so you can set your AWS credentials using [Environment
-Variables](http://boto3.readthedocs.io/en/latest/guide/configuration.html#environment-variables)
+**Note:** `dec2` uses
+[`boto3`](http://boto3.readthedocs.io/en/latest/index.html) to interact with
+Amazon EC2. You can configure your AWS credentials using
+[Environment Variables](http://boto3.readthedocs.io/en/latest/guide/configuration.html#environment-variables)
 or [Configuration Files](http://boto3.readthedocs.io/en/latest/guide/configuration.html#configuration-files).
 
-There is some CLI arguments
+The `dec2 up` command can be used to create and provision a cluster on Amazon EC2:
+
 ```bash
 $ dec2 up --help
-
 Usage: dec2 up [OPTIONS]
 
 Options:
@@ -30,24 +48,42 @@ Options:
   --volume-size INTEGER         Root volume size (GB)  [default: 500]
   --file PATH                   File to save the metadata  [default:
                                 cluster.yaml]
-  --ssh-check / --no-ssh-check  Whether to check or not for SSH connection
-                                [default: True]
   --provision / --no-provision  Provision salt on the nodes  [default: True]
+  --anaconda / --no-anaconda    Bootstrap anaconda  [default: True]
   --dask / --no-dask            Install Dask.Distributed in the cluster
                                 [default: True]
+  --notebook / --no-notebook    Start a Jupyter Notebook in the head node
+                                [default: True]
+  --nprocs INTEGER              Number of processes per worker  [default: 1]
   -h, --help                    Show this message and exit.
 ```
 
-The minimal required are:
+The minimal required arguments for the `dec2 up` command are:
 
 ```
-$ dec2 up --keyname myawskey --keypair ~/.ssh/myawskey.pem
+$ dec2 up --keyname my_aws_key --keypair ~/.ssh/my_aws_key.pem
 ```
 
-This will create a `cluster.yaml` in the directory it was executed, this file is required for the other commands in the CLI.
+This will create a `cluster.yaml` in the directory that it was executed, and
+this file is required to use the other commands in the CLI.
 
-To start a distributed cluster:
+Once a cluster is running, the `dec2` command can be used to create or destroy
+a cluster, ssh into nodes, or other functions:
 
-```
-$ dec2 dask-distributed
+```bash
+$ dec2
+Usage: dec2 [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --version   Show the version and exit.
+  -h, --help  Show this message and exit.
+
+Commands:
+  anaconda          Provision anaconda
+  dask-distributed  dask.distributed option
+  destroy           Destroy cluster
+  notebook          Provision the Jupyter notebook
+  provision         Provision salt instances
+  ssh               SSH to one of the node. 0-index
+  up                Launch instances
 ```
