@@ -353,7 +353,7 @@ def install_salt_minion(cluster):
 
 
 def upload_formulas(cluster):
-    dec2_src = src_dir = os.path.realpath(os.path.dirname(dec2.__file__))
+    dec2_src = os.path.realpath(os.path.dirname(dec2.__file__))
     src_salt_root = os.path.join(dec2_src, "formulas", "salt")
     src_pillar_root = os.path.join(dec2_src, "formulas", "pillar")
     dst_salt_root = "/srv/salt"
@@ -370,9 +370,12 @@ def upload_pillar(cluster, name, data):
     import tempfile
 
     master = cluster.instances[0].ssh_client
-
-    with tempfile.NamedTemporaryFile('w') as f:
+    f = tempfile.NamedTemporaryFile("w", deleteF=False)
+    try:
         yaml.safe_dump(data, f, default_flow_style=False)
+        f.close()
         local = f.name
         remote = "/srv/pillar/{}".format(name)
         master.put(local, remote, sudo=True)
+    finally:
+        os.remove(f.name)
