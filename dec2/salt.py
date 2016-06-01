@@ -370,7 +370,7 @@ def upload_pillar(cluster, name, data):
     import tempfile
 
     master = cluster.instances[0].ssh_client
-    f = tempfile.NamedTemporaryFile("w", deleteF=False)
+    f = tempfile.NamedTemporaryFile("w", delete=False)
     try:
         yaml.safe_dump(data, f, default_flow_style=False)
         f.close()
