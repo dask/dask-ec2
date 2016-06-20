@@ -7,7 +7,7 @@ import logging
 import posixpath
 from socket import gaierror as sock_gaierror, error as sock_error
 
-from .exceptions import DEC2Exception
+from .exceptions import DaskEc2Exception
 
 import paramiko
 
@@ -28,7 +28,7 @@ class SSHClient(object):
                 pkey = os.path.expanduser(pkey)
                 self.pkey = paramiko.RSAKey.from_private_key_file(pkey)
             else:
-                raise DEC2Exception("pkey argument should be filepath or paramiko.rsakey.RSAKey")
+                raise DaskEc2Exception("pkey argument should be filepath or paramiko.rsakey.RSAKey")
         else:
             self.pkey = None
         self.port = port
@@ -52,13 +52,13 @@ class SSHClient(object):
                                 pkey=self.pkey,
                                 timeout=self.timeout)
         except paramiko.AuthenticationException as e:
-            raise DEC2Exception("Authentication Error to host '%s'" % self.host)
+            raise DaskEc2Exception("Authentication Error to host '%s'" % self.host)
         except sock_gaierror as e:
-            raise DEC2Exception("Unknown host '%s'" % self.host)
+            raise DaskEc2Exception("Unknown host '%s'" % self.host)
         except sock_error as e:
-            raise DEC2Exception("Error connecting to host '%s:%s'\n%s" % (self.host, self.port, e))
+            raise DaskEc2Exception("Error connecting to host '%s:%s'\n%s" % (self.host, self.port, e))
         except paramiko.SSHException as e:
-            raise DEC2Exception("General SSH error - %s" % e)
+            raise DaskEc2Exception("General SSH error - %s" % e)
 
     def close(self):
         self.client.close()

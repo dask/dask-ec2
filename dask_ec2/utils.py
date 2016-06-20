@@ -1,7 +1,7 @@
 import time
 import logging
 
-from dec2.exceptions import RetriesExceededException
+from dask_ec2.exceptions import RetriesExceededException
 
 logger = logging.getLogger(__name__)
 

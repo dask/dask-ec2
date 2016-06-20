@@ -5,9 +5,9 @@ import os
 import logging
 import threading
 
-import dec2
-from dec2.utils import retry
-from dec2.exceptions import DEC2Exception, RetriesExceededException
+import dask_ec2
+from dask_ec2.utils import retry
+from dask_ec2.exceptions import DaskEc2Exception, RetriesExceededException
 
 logger = logging.getLogger(__name__)
 
@@ -101,8 +101,8 @@ class Response(dict):
 
 def install_salt_master(cluster):
     master = cluster.instances[0].ssh_client
-    dec2_src = src_dir = os.path.realpath(os.path.dirname(dec2.__file__))
-    templates_src = src_dir = os.path.join(dec2_src, "templates")
+    dask_ec2_src = os.path.realpath(os.path.dirname(dask_ec2.__file__))
+    templates_src = os.path.join(dask_ec2_src, "templates")
 
     @retry(retries=3, wait=0)
     def __install_salt_master():
@@ -115,8 +115,8 @@ def install_salt_master(cluster):
     try:
         __install_salt_master()
     except RetriesExceededException as e:
-        raise DEC2Exception("%s\nCouldn't bootstrap salt-master. Error is above (maybe try again)" %
-                            e.last_exception)
+        raise DaskEc2Exception("%s\nCouldn't bootstrap salt-master. Error is above (maybe try again)" %
+                               e.last_exception)
 
     @retry(retries=3, wait=0)
     def __install_salt_api():
@@ -128,8 +128,8 @@ def install_salt_master(cluster):
     try:
         __install_salt_api()
     except RetriesExceededException as e:
-        raise DEC2Exception("%s\nCouldn't bootstrap salt-api. Error is above (maybe try again)" %
-                            e.last_exception)
+        raise DaskEc2Exception("%s\nCouldn't bootstrap salt-api. Error is above (maybe try again)" %
+                               e.last_exception)
 
     @retry(retries=3, wait=0)
     def __setup_salt_master():
@@ -140,7 +140,7 @@ def install_salt_master(cluster):
     try:
         __setup_salt_master()
     except RetriesExceededException as e:
-        raise DEC2Exception(
+        raise DaskEc2Exception(
             "%s\nCouldn't setup salt-master settings. Error is above (maybe try again)" %
             e.last_exception)
 
@@ -154,8 +154,8 @@ def install_salt_master(cluster):
     try:
         __install_salt_rest_api()
     except RetriesExceededException as e:
-        raise DEC2Exception("%s\nCouldn't install CherryPy. Error is above (maybe try again)" %
-                            e.last_exception)
+        raise DaskEc2Exception("%s\nCouldn't install CherryPy. Error is above (maybe try again)" %
+                               e.last_exception)
 
     @retry(retries=3, wait=0)
     def __install_pyopensll():
@@ -167,8 +167,8 @@ def install_salt_master(cluster):
     try:
         __install_pyopensll()
     except RetriesExceededException as e:
-        raise DEC2Exception("%s\nCouldn't install PyOpenSSL. Error is above (maybe try again)" %
-                            e.last_exception)
+        raise DaskEc2Exception("%s\nCouldn't install PyOpenSSL. Error is above (maybe try again)" %
+                               e.last_exception)
 
     @retry(retries=3, wait=0)
     def __create_ssl_cert():
@@ -180,7 +180,7 @@ def install_salt_master(cluster):
     try:
         __create_ssl_cert()
     except RetriesExceededException as e:
-        raise DEC2Exception(
+        raise DaskEc2Exception(
             "%s\nCouldn't generate SSL certificate. Error is above (maybe try again)" %
             e.last_exception)
 
@@ -193,8 +193,8 @@ def install_salt_master(cluster):
     try:
         __setup_rest_cherrypy()
     except RetriesExceededException as e:
-        raise DEC2Exception("%s\nCouldn't setup salt-rest server. Error is above (maybe try again)"
-                            % e.last_exception)
+        raise DaskEc2Exception("%s\nCouldn't setup salt-rest server. Error is above (maybe try again)" %
+                               e.last_exception)
 
     @retry(retries=3, wait=0)
     def __setup_salt_external_auth():
@@ -205,7 +205,7 @@ def install_salt_master(cluster):
     try:
         __setup_salt_external_auth()
     except RetriesExceededException as e:
-        raise DEC2Exception(
+        raise DaskEc2Exception(
             "%s\nCouldn't setup salt external auth system. Error is above (maybe try again)" %
             e.last_exception)
 
@@ -219,8 +219,8 @@ def install_salt_master(cluster):
     try:
         __create_saltdev_user()
     except RetriesExceededException as e:
-        raise DEC2Exception("%s\nCouldn't create 'saltdev' user. Error is above (maybe try again)" %
-                            e.last_exception)
+        raise DaskEc2Exception("%s\nCouldn't create 'saltdev' user. Error is above (maybe try again)" %
+                               e.last_exception)
 
     @retry(retries=3, wait=0)
     def __restart_salt_master():
@@ -232,7 +232,7 @@ def install_salt_master(cluster):
     try:
         __restart_salt_master()
     except RetriesExceededException as e:
-        raise DEC2Exception(
+        raise DaskEc2Exception(
             "%s\nCouldn't restart salt-master service. Error is above (maybe try again)" %
             e.last_exception)
 
@@ -246,7 +246,7 @@ def install_salt_master(cluster):
     try:
         __restart_salt_api()
     except RetriesExceededException as e:
-        raise DEC2Exception(
+        raise DaskEc2Exception(
             "%s\nCouldn't restart salt-api service. Error is above (maybe try again)" %
             e.last_exception)
 
@@ -282,8 +282,8 @@ def async_upload(results, instance, local, remote):
 
 
 def install_salt_minion(cluster):
-    dec2_src = os.path.realpath(os.path.dirname(dec2.__file__))
-    templates_src = os.path.join(dec2_src, "templates")
+    dask_ec2_src = os.path.realpath(os.path.dirname(dask_ec2.__file__))
+    templates_src = os.path.join(dask_ec2_src, "templates")
 
     logger.debug("Installing salt-minion on all the nodes")
     results, threads = {}, []
@@ -292,7 +292,7 @@ def install_salt_minion(cluster):
         minion_id = "node-{}".format(i)
         cmd = "curl -L https://bootstrap.saltstack.com | sh -s -- "
         cmd += "-d -X -P -L -A {master_ip} -i {minion_id} stable".format(master_ip=master_ip,
-                                                                   minion_id=minion_id)
+                                                                         minion_id=minion_id)
         t = threading.Thread(target=async_cmd, args=(results, instance, cmd))
         t.start()
         threads.append(t)
@@ -303,11 +303,11 @@ def install_salt_minion(cluster):
     if not all_ok:
         failed_nodes = []
         for minion_ip, minion_data in results.items():
-            if minion_data == False:
+            if minion_data is False:
                 failed_nodes.append(minion_ip)
         if failed_nodes:
-            raise DEC2Exception("Error bootstraping salt-minion at nodes: %s (maybe try again)" %
-                                failed_nodes)
+            raise DaskEc2Exception("Error bootstraping salt-minion at nodes: %s (maybe try again)" %
+                                   failed_nodes)
 
     logger.debug("Configuring salt-mine on the salt minions")
     results, threads = {}, []
@@ -320,14 +320,14 @@ def install_salt_minion(cluster):
     for t in threads:
         t.join()
 
-    all_ok = all([r == False for r in results])
+    all_ok = all([r is False for r in results])
     if not all_ok:
         failed_nodes = []
         for minion_ip, minion_data in results.items():
-            if minion_data == False:
+            if minion_data is False:
                 failed_nodes.append(minion_ip)
         if failed_nodes:
-            raise DEC2Exception(
+            raise DaskEc2Exception(
                 "Error configuring the salt-mine in the salt-minion at nodes: %s (maybe try again)"
                 % failed_nodes)
 
@@ -341,21 +341,21 @@ def install_salt_minion(cluster):
     for t in threads:
         t.join()
 
-    all_ok = all([r == False for r in results])
+    all_ok = all([r is False for r in results])
     if not all_ok:
         failed_nodes = []
         for minion_ip, minion_data in results.items():
-            if minion_data == False:
+            if minion_data is False:
                 failed_nodes.append(minion_ip)
         if failed_nodes:
-            raise DEC2Exception("Error restarting the salt-minion at nodes: %s (maybe try again)" %
-                                failed_nodes)
+            raise DaskEc2Exception("Error restarting the salt-minion at nodes: %s (maybe try again)" %
+                                   failed_nodes)
 
 
 def upload_formulas(cluster):
-    dec2_src = os.path.realpath(os.path.dirname(dec2.__file__))
-    src_salt_root = os.path.join(dec2_src, "formulas", "salt")
-    src_pillar_root = os.path.join(dec2_src, "formulas", "pillar")
+    dask_ec2_src = os.path.realpath(os.path.dirname(dask_ec2.__file__))
+    src_salt_root = os.path.join(dask_ec2_src, "formulas", "salt")
+    src_pillar_root = os.path.join(dask_ec2_src, "formulas", "pillar")
     dst_salt_root = "/srv/salt"
     dst_pillar_root = "/srv/pillar"
 

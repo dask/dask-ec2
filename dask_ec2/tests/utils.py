@@ -6,12 +6,12 @@ import pytest
 
 from click.testing import CliRunner
 
-from dec2.cli.main import cli
+from dask_ec2.cli.main import cli
 
 
 @pytest.yield_fixture(scope="module")
 def driver():
-    from dec2.ec2 import EC2
+    from dask_ec2.ec2 import EC2
     driver = EC2(region="us-east-1")
     yield driver
 
@@ -30,7 +30,7 @@ def invoke(*args):
 
 @pytest.yield_fixture(scope="module")
 def cluster():
-    from dec2 import Cluster
+    from dask_ec2 import Cluster
     clusterfile = os.environ['TEST_CLUSTERFILE']
     yield Cluster.from_filepath(clusterfile)
 

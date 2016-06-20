@@ -1,4 +1,4 @@
 include versioneer.py
-include dec2/_version.py
-recursive-include dec2/formulas *
-recursive-include dec2/templates *
+include dask_ec2/_version.py
+recursive-include dask_ec2/formulas *
+recursive-include dask_ec2/templates *

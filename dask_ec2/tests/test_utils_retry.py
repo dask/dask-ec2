@@ -2,8 +2,8 @@ from __future__ import absolute_import, print_function, division
 
 import pytest
 
-from dec2.utils import retry
-from dec2.exceptions import RetriesExceededException
+from dask_ec2.utils import retry
+from dask_ec2.exceptions import RetriesExceededException
 
 
 @retry(wait=0)

@@ -7,7 +7,7 @@ import yaml
 from . import libpepper
 
 from .compatibility import URLError
-from .exceptions import DEC2Exception
+from .exceptions import DaskEc2Exception
 from .instance import Instance
 
 logger = logging.getLogger(__name__)
@@ -53,8 +53,8 @@ class Cluster(object):
                 self._pepper = libpepper.Pepper(url, ignore_ssl_errors=True)
                 self._pepper.login('saltdev', 'saltdev', 'pam')
             except URLError as e:
-                raise DEC2Exception(
-                    "Could not connect to salt server. Try `dec2 provision` and try again")
+                raise DaskEc2Exception(
+                    "Could not connect to salt server. Try `dask-ec2 provision` and try again")
         return self._pepper
 
     pepper = property(get_pepper_client, None, None)
@@ -64,14 +64,14 @@ class Cluster(object):
         try:
             return self.pepper.local(target, module, args)
         except URLError as e:
-            raise DEC2Exception(
-                "Could not connect to salt server. Try `dec2 provision` and try again")
+            raise DaskEc2Exception(
+                "Could not connect to salt server. Try `dask-ec2 provision` and try again")
 
     def append(self, instance):
         if isinstance(instance, Instance):
             self.instances.append(instance)
         else:
-            raise DEC2Exception("Can only append dec2.Instance types to the cluster nodes")
+            raise DaskEc2Exception("Can only append dask_ec2.Instance types to the cluster nodes")
 
     def set_username(self, username):
         for instance in self.instances:

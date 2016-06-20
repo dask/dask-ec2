@@ -4,8 +4,8 @@ import pytest
 
 from moto import mock_ec2
 
-from dec2.ec2 import DEFAULT_SG_GROUP_NAME
-from dec2.exceptions import DEC2Exception
+from dask_ec2.ec2 import DEFAULT_SG_GROUP_NAME
+from dask_ec2.exceptions import DaskEc2Exception
 from .utils import driver
 
 # Some default values
@@ -22,7 +22,7 @@ security_group = "another-sg"
 
 @mock_ec2
 def test_launch_no_keyname(driver):
-    with pytest.raises(DEC2Exception) as e:
+    with pytest.raises(DaskEc2Exception) as e:
         driver.launch(name=name,
                       image_id=ami,
                       instance_type=instance_type,
@@ -94,7 +94,7 @@ def test_check_sg(driver):
     driver.check_sg(DEFAULT_SG_GROUP_NAME)
     # driver.check_sg("ANOTHER_FAKE_SG")
 
-    with pytest.raises(DEC2Exception) as e:
+    with pytest.raises(DaskEc2Exception) as e:
         driver.check_sg("ANOTHER_FAKE_SG")
-    assert "Security group 'ANOTHER_FAKE_SG' not found, please create or use the default 'dec2-default'" == str(
+    assert "Security group 'ANOTHER_FAKE_SG' not found, please create or use the default 'dask-ec2-default'" == str(
         e.value)

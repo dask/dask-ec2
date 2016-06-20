@@ -4,10 +4,10 @@ import click
 
 from botocore.exceptions import ClientError
 
-import dec2
+import dask_ec2
 from ..salt import Response
 from ..cluster import Cluster
-from ..exceptions import DEC2Exception
+from ..exceptions import DaskEc2Exception
 from ..config import setup_logging
 from .utils import Table
 
@@ -20,7 +20,7 @@ def start():
     try:
         setup_logging(logging.DEBUG)
         cli(obj={})
-    except DEC2Exception as e:
+    except DaskEc2Exception as e:
         click.echo("ERROR: %s" % e, err=True)
         sys.exit(1)
     except ClientError as e:
@@ -39,7 +39,7 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 
 @click.group(context_settings=CONTEXT_SETTINGS)
-@click.version_option(prog_name="dec2", version=dec2.__version__)
+@click.version_option(prog_name="dask-ec2", version=dask_ec2.__version__)
 @click.pass_context
 def cli(ctx):
     ctx.obj = {}
@@ -52,7 +52,7 @@ def cli(ctx):
               required=True,
               type=click.Path(exists=True),
               help="Path to the keypair that matches the keyname")
-@click.option("--name", required=False, default="dec2-cluster", help="Tag name on EC2")
+@click.option("--name", required=False, default="dask-ec2-cluster", help="Tag name on EC2")
 @click.option("--region-name",
               default="us-east-1",
               show_default=True,
@@ -72,7 +72,7 @@ def cli(ctx):
               help="EC2 Instance Type")
 @click.option("--count", default=4, show_default=True, required=False, help="Number of nodes")
 @click.option("--security-group",
-              default="dec2-default",
+              default="dask-ec2-default",
               show_default=True,
               required=False,
               help="Security Group Name")

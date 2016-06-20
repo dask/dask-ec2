@@ -7,11 +7,11 @@ import paramiko
 import boto3
 from botocore.exceptions import ClientError
 
-from dec2.exceptions import DEC2Exception
+from dask_ec2.exceptions import DaskEc2Exception
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_SG_GROUP_NAME = "dec2-default"
+DEFAULT_SG_GROUP_NAME = "dask-ec2-default"
 
 
 class EC2(object):
@@ -28,7 +28,7 @@ class EC2(object):
         except ClientError as e:
             error_code = e.response["Error"]["Code"]
             if error_code == "InvalidKeyPair.NotFound":
-                raise DEC2Exception(
+                raise DaskEc2Exception(
                     "The keyname '%s' does not exist, please create it in the EC2 console" %
                     keyname)
             else:
@@ -61,7 +61,7 @@ class EC2(object):
                                  DEFAULT_SG_GROUP_NAME)
                     self.create_default_sg()
                 else:
-                    raise DEC2Exception(
+                    raise DaskEc2Exception(
                         "Security group '%s' not found, please create or use the default '%s'" %
                         (security_group, DEFAULT_SG_GROUP_NAME))
         except ClientError as e:
@@ -72,7 +72,7 @@ class EC2(object):
                                  DEFAULT_SG_GROUP_NAME)
                     self.create_default_sg()
                 else:
-                    raise DEC2Exception(
+                    raise DaskEc2Exception(
                         "Security group '%s' not found, please create or use the default '%s'" %
                         (security_group, DEFAULT_SG_GROUP_NAME))
             else:
@@ -85,7 +85,7 @@ class EC2(object):
         try:
             response = self.client.create_security_group(
                 GroupName=DEFAULT_SG_GROUP_NAME,
-                Description="Default security group for dec2",)
+                Description="Default security group for dask-ec2",)
         except ClientError as e:
             error_code = e.response["Error"]["Code"]
             if error_code == "InvalidGroup.Duplicate":
@@ -215,7 +215,7 @@ class EC2(object):
 
     def destroy(self, ids):
         if ids is None or ids == []:
-            raise DEC2Exception("Instances ids cannot be None or empty list")
+            raise DaskEc2Exception("Instances ids cannot be None or empty list")
         logger.debug("Terminating instances: %s", ids)
         self.ec2.instances.filter(InstanceIds=ids).terminate()
         waiter = self.client.get_waiter('instance_terminated')

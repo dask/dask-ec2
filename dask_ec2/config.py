@@ -11,7 +11,7 @@ def setup_logging(log_level=logging.WARNING):
 
     logging.getLogger("paramiko").setLevel(logging.WARNING)
 
-    logger = logging.getLogger("dec2")
+    logger = logging.getLogger("dask_ec2")
     logger.setLevel(log_level)
     logger.propagate = False
 

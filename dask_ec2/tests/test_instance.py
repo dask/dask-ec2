@@ -4,8 +4,8 @@ import pytest
 
 from moto import mock_ec2
 
-from dec2 import Instance
-from dec2.exceptions import DEC2Exception
+from dask_ec2 import Instance
+from dask_ec2.exceptions import DaskEc2Exception
 from .utils import remotetest, cluster, driver
 
 
@@ -43,7 +43,7 @@ def test_check_ssh(cluster):
 
 @mock_ec2
 def test_from_boto3(driver):
-    from dec2.ec2 import DEFAULT_SG_GROUP_NAME
+    from dask_ec2.ec2 import DEFAULT_SG_GROUP_NAME
     name = "test_launch"
     ami = "ami-d05e75b8"
     instance_type = "m3.2xlarge"

@@ -39,7 +39,7 @@ before_install:
   - docker version
   - docker-compose version
   - pushd ci
-  - docker build -t "dec2test" .
+  - docker build -t "dask-ec2-test" .
   - docker-compose up -d
   - docker ps
   - docker images
@@ -68,4 +68,4 @@ install:
   - pip install dist/*.tar.gz
 
 script:
-  - py.test --pyargs dec2 --cov=dec2 --cov-report term-missing --cov-report html -s -vv
+  - py.test --pyargs dask_ec2 --cov=dask_ec2 --cov-report term-missing --cov-report html -s -vv

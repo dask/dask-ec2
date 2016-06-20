@@ -100,7 +100,7 @@ TCP Interface:           {0}:8786
 To connect from the cluster
 ---------------------------
 
-dec2 ssh  # ssh into head node
+dask-ec2 ssh  # ssh into head node
 ipython  # start ipython shell
 
 from distributed import Executor, s3, progress
@@ -119,7 +119,7 @@ e = Executor({0})  # Connect to scheduler running on the head node
 To destroy
 ----------
 
-dec2 destroy""".format(address).lstrip())
+dask-ec2 destroy""".format(address).lstrip())
 
 
 @dask.command(
@@ -148,12 +148,12 @@ def dask_shell(ctx, filepath):
         shell = "python"
     import os
     import subprocess
-    import dec2
+    import dask_ec2
     cluster = Cluster.from_filepath(filepath)
     address = "{}:{}".format(cluster.instances[0].ip, 8786)
     os.environ["DISTRIBUTED_ADDRESS"] = address
-    dec2_src = src_dir = os.path.realpath(os.path.dirname(dec2.__file__))
-    dask_shell_py = os.path.join(dec2_src, "cli", "dask_shell.py")
+    dask_ec2_src = os.path.realpath(os.path.dirname(dask_ec2.__file__))
+    dask_shell_py = os.path.join(dask_ec2_src, "cli", "dask_shell.py")
     cmd = [shell, "-i", dask_shell_py]
     subprocess.call(cmd)
 

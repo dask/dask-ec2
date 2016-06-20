@@ -1,37 +1,37 @@
-# dec2
+# Dask EC2
 
 Easily launch a cluster on Amazon EC2 configured with `dask.distributed`,
 Jupyter Notebooks, and Anaconda.
 
 ## Installation
 
-You can install `dec2` and its dependencies from the
+You can install `dask-ec2` and its dependencies from the
 [conda-forge](https://conda-forge.github.io/>) repository using
 [conda](https://www.continuum.io/downloads):
 
 ```bash
-$ conda install dec2 -c conda-forge
+$ conda install dask-ec2 -c conda-forge
 ```
 
-You can also install `dec2` using pip:
+You can also install `dask-ec2` using pip:
 
 ```bash
-$ pip install dec2
+$ pip install dask-ec2
 ```
 
 ## Usage
 
-**Note:** `dec2` uses
+**Note:** `dask-ec2` uses
 [`boto3`](http://boto3.readthedocs.io/en/latest/index.html) to interact with
 Amazon EC2. You can configure your AWS credentials using
 [Environment Variables](http://boto3.readthedocs.io/en/latest/guide/configuration.html#environment-variables)
 or [Configuration Files](http://boto3.readthedocs.io/en/latest/guide/configuration.html#configuration-files).
 
-The `dec2 up` command can be used to create and provision a cluster on Amazon EC2:
+The `dask-ec2 up` command can be used to create and provision a cluster on Amazon EC2:
 
 ```bash
-$ dec2 up --help
-Usage: dec2 up [OPTIONS]
+$ dask-ec2 up --help
+Usage: dask-ec2 up [OPTIONS]
 
 Options:
   --keyname TEXT                Keyname on EC2 console  [required]
@@ -43,7 +43,7 @@ Options:
   --username TEXT               User to SSH to the AMI  [default: ubuntu]
   --type TEXT                   EC2 Instance Type  [default: m3.2xlarge]
   --count INTEGER               Number of nodes  [default: 4]
-  --security-group TEXT         Security Group Name  [default: dec2-default]
+  --security-group TEXT         Security Group Name  [default: dask-ec2-default]
   --volume-type TEXT            Root volume type  [default: gp2]
   --volume-size INTEGER         Root volume size (GB)  [default: 500]
   --file PATH                   File to save the metadata  [default:
@@ -58,21 +58,21 @@ Options:
   -h, --help                    Show this message and exit.
 ```
 
-The minimal required arguments for the `dec2 up` command are:
+The minimal required arguments for the `dask-ec2 up` command are:
 
 ```
-$ dec2 up --keyname my_aws_key --keypair ~/.ssh/my_aws_key.pem
+$ dask-ec2 up --keyname my_aws_key --keypair ~/.ssh/my_aws_key.pem
 ```
 
 This will create a `cluster.yaml` in the directory that it was executed, and
 this file is required to use the other commands in the CLI.
 
-Once a cluster is running, the `dec2` command can be used to create or destroy
+Once a cluster is running, the `dask-ec2` command can be used to create or destroy
 a cluster, ssh into nodes, or other functions:
 
 ```bash
-$ dec2
-Usage: dec2 [OPTIONS] COMMAND [ARGS]...
+$ dask-ec2
+Usage: dask-ec2 [OPTIONS] COMMAND [ARGS]...
 
 Options:
   --version   Show the version and exit.

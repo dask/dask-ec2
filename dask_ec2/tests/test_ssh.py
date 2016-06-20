@@ -2,8 +2,8 @@ from __future__ import absolute_import, print_function, division
 
 import pytest
 
-from dec2.ssh import SSHClient
-from dec2.exceptions import DEC2Exception
+from dask_ec2.ssh import SSHClient
+from dask_ec2.exceptions import DaskEc2Exception
 from .utils import remotetest, cluster
 
 
@@ -20,7 +20,7 @@ def test_ssh_ok_pkey_obj(cluster):
 def test_wrong_pkey_type(cluster):
     instance = cluster.head
     pkey = {"wrong": "obj"}
-    with pytest.raises(DEC2Exception) as excinfo:
+    with pytest.raises(DaskEc2Exception) as excinfo:
         client = SSHClient(host=instance.ip, username=instance.username, port=instance.port, password=None, pkey=pkey)
 
 
@@ -37,7 +37,7 @@ def test_ssh_ok_password(cluster):
 def test_ssh_fail_password(cluster):
     instance = cluster.head
     password = "root_not"    # NOTE: this is a little bit hardcoded to docker setup
-    with pytest.raises(DEC2Exception) as excinfo:
+    with pytest.raises(DaskEc2Exception) as excinfo:
         client = SSHClient(host=instance.ip, username=instance.username, port=instance.port, password=password, pkey=None)
     assert "Authentication Error" in str(excinfo.value)
 
@@ -46,7 +46,7 @@ def test_ssh_fail_password(cluster):
 def test_ssh_fail_user(cluster):
     client = cluster.head.ssh_client
     client.username = "FAKEUSER"
-    with pytest.raises(DEC2Exception) as excinfo:
+    with pytest.raises(DaskEc2Exception) as excinfo:
         client.connect()
     assert "Authentication Error" in str(excinfo.value)
     client.close()
@@ -57,7 +57,7 @@ def test_ssh_fail_host(cluster):
     client = cluster.head.ssh_client
     client.host = "1.1.1.1"
     client.timeout = 3    # so test runs faster
-    with pytest.raises(DEC2Exception) as excinfo:
+    with pytest.raises(DaskEc2Exception) as excinfo:
         client.connect()
     assert "Error connecting to host" in str(excinfo.value)
     assert "timed out" in str(excinfo.value)
@@ -68,7 +68,7 @@ def test_ssh_fail_host(cluster):
 def test_wrong_host(cluster):
     client = cluster.head.ssh_client
     client.host = "'WRONGHOST''"
-    with pytest.raises(DEC2Exception) as excinfo:
+    with pytest.raises(DaskEc2Exception) as excinfo:
         client.connect()
     assert "Unknown host" in str(excinfo.value)
     client.close()
