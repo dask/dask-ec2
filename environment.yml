@@ -1,0 +1,16 @@
+name: dask-ec2
+dependencies:
+  - python
+  - six
+  - paramiko
+  - yaml
+  - pyyaml
+  - pip:
+    - click
+    - boto3
+    - pytest
+    - coverage
+    - pytest-cov
+    - moto
+    - pylint
+    - twine
