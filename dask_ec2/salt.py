@@ -77,7 +77,7 @@ class Response(dict):
         ret = True
         for node_id, data in self.items():
             failed = data["failed"]
-            ret = ret & len(failed) == 0
+            ret = ret & (len(failed) == 0)
         return ret
 
     def group_by_id(self, ignore_fields=None, sort=True):
