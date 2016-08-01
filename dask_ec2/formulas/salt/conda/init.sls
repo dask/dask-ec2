@@ -6,7 +6,7 @@ miniconda-curl:
 
 miniconda-download:
   cmd.run:
-    - name: curl {{ download_url }} > /tmp/miniconda.sh
+    - name: curl -k {{ download_url }} > /tmp/miniconda.sh
     - unless: test -e {{ install_prefix }}
     - require:
       - pkg: miniconda-curl
