@@ -3,9 +3,8 @@ from __future__ import print_function, division, absolute_import
 import time
 import logging
 
-import paramiko
 import boto3
-from botocore.exceptions import ClientError
+from botocore.exceptions import ClientError, WaiterError
 
 from dask_ec2.exceptions import DaskEc2Exception
 
@@ -16,11 +15,54 @@ DEFAULT_SG_GROUP_NAME = "dask-ec2-default"
 
 class EC2(object):
 
-    def __init__(self, region):
+    def __init__(self, region, vpc_id=None, subnet_id=None, default_vpc=False, default_subnet=False, test=True):
         self.ec2 = boto3.resource('ec2', region_name=region)
         self.client = boto3.client('ec2', region_name=region)
+        self.vpc_id = self.get_default_vpc() if default_vpc else vpc_id
+        self.subnet_id = self.get_default_subnet() if default_subnet else subnet_id
+
+        if test:
+            collection = self.ec2.instances.filter(Filters=[{"Name": "instance-state-name", "Values": ["running"]}])
+            _ = list(collection)
+
+    def get_default_vpc(self):
+        """
+        Get the default VPC of the account.
+
+        Raises
+        ------
+            If there is not a default VPC
+        """
+        for vpc in self.ec2.vpcs.all():
+            if vpc.is_default:
+                return vpc.id
+        raise DaskEc2Exception("There is no default VPC, please pass VPC ID")
+
+    def get_default_subnet(self, availability_zone=None):
+        """
+        Get the default subnet on the VPC ID.
+
+        Raises
+        ------
+            If there is not a default subnet on the VPC
+        """
+        for vpc in self.ec2.vpcs.all():
+            if vpc.id == self.vpc_id:
+                for subnet in vpc.subnets.all():
+                    if availability_zone is None and subnet.default_for_az:
+                        return subnet.id
+                    else:
+                        if subnet.availability_zone == availability_zone and subnet.default_for_az:
+                            return subnet.id
+        raise DaskEc2Exception("There is no default subnet on VPC %s, please pass a subnet ID" % self.vpc_id)
 
     def check_keyname(self, keyname):
+        """Checks that a keyname exists on the EC2 account"
+
+        Raises
+        ------
+            DaskEc2Exception if the keyname doesn't exists
+        """
         logger.debug("Checking that keyname '%s' exists on EC2", keyname)
         try:
             key_pair = self.client.describe_key_pairs(KeyNames=[keyname])
@@ -28,64 +70,64 @@ class EC2(object):
         except ClientError as e:
             error_code = e.response["Error"]["Code"]
             if error_code == "InvalidKeyPair.NotFound":
-                raise DaskEc2Exception(
-                    "The keyname '%s' does not exist, please create it in the EC2 console" %
-                    keyname)
+                raise DaskEc2Exception("The keyname '%s' does not exist, please create it in the EC2 console" % keyname)
             else:
                 raise e
 
-    def check_keypair(self, keyname, keypair):
-        # TODO: Is this possible?
-        return
-        key_pair = self.ec2.KeyPair(keyname)
-        print(key_pair.key_fingerprint)
+    def get_security_groups(self, security_group_name):
+        """Get the security group (if exists) in the VPC ID
 
-        key = paramiko.RSAKey.from_private_key_file(keypair)
-        print(key.get_fingerprint())
+        Parameters
+        ----------
+        security_group_name : str
+        """
+        logger.debug("Getting all security groups and filtering by VPC ID %s and name %s", self.vpc_id,
+                     security_group_name)
+        collection = self.ec2.security_groups.all()
+        matches = [i for i in collection]
+        if self.vpc_id is not None:
+            matches = [m for m in matches if m.vpc_id == self.vpc_id and m.group_name == security_group_name]
+        else:
+            matches = [m for m in matches if m.group_name == security_group_name]
+        logger.debug("Found Security groups: %s", matches)
+        return matches
 
-        # import hashlib
-        # sha1digest = hashlib.sha1(key.exportKey('DER', pkcs=8)).hexdigest()
-        # print(sha1digest)
+    def get_security_groups_ids(self, security_groups):
+        """Get the security group ids (if exists) for the security group names in the VPC
+        """
+        return [i.id for i in self.get_security_groups(security_groups)]
 
     def check_sg(self, security_group):
-        """Checks if the security groups exists.
+        """Checks if the security groups exists in the EC2 account
         If security_group is the default one it will create it.
         """
         logger.debug("Checking that security group '%s' exists on EC2", security_group)
         try:
-            collection = self.ec2.security_groups.filter(GroupNames=[security_group])
-            matches = [i for i in collection]
-            if len(matches) == 0:
+            sg = self.get_security_groups(security_group)
+            if not sg:
                 if security_group == DEFAULT_SG_GROUP_NAME:
-                    logger.debug("Default security group '%s' not found, we will create it",
-                                 DEFAULT_SG_GROUP_NAME)
+                    logger.debug("Default security group '%s' not found, creating it", DEFAULT_SG_GROUP_NAME)
                     self.create_default_sg()
                 else:
-                    raise DaskEc2Exception(
-                        "Security group '%s' not found, please create or use the default '%s'" %
-                        (security_group, DEFAULT_SG_GROUP_NAME))
+                    raise DaskEc2Exception("Security group '%s' not found, please create or use the default '%s'" %
+                                           (security_group, DEFAULT_SG_GROUP_NAME))
         except ClientError as e:
-            error_code = e.response["Error"]["Code"]
-            if error_code == "InvalidGroup.NotFound":
-                if security_group == DEFAULT_SG_GROUP_NAME:
-                    logger.debug("Default security group '%s' not found, creating it",
-                                 DEFAULT_SG_GROUP_NAME)
-                    self.create_default_sg()
-                else:
-                    raise DaskEc2Exception(
-                        "Security group '%s' not found, please create or use the default '%s'" %
-                        (security_group, DEFAULT_SG_GROUP_NAME))
-            else:
-                raise e
+            raise DaskEc2Exception("Security group '%s' not found, please create or use the default '%s'" %
+                                   (security_group, DEFAULT_SG_GROUP_NAME))
 
     def create_default_sg(self):
-        """Create the default security group
+        """Create the default security group with very open settings.
         """
-        logger.debug("Creating default (very open) security group '%s'", DEFAULT_SG_GROUP_NAME)
+        logger.debug("Creating default (very open) security group '%s' on VPC %s", DEFAULT_SG_GROUP_NAME, self.vpc_id)
         try:
-            response = self.client.create_security_group(
-                GroupName=DEFAULT_SG_GROUP_NAME,
-                Description="Default security group for dask-ec2",)
+            if self.vpc_id is not None:
+                _ = self.client.create_security_group(GroupName=DEFAULT_SG_GROUP_NAME,
+                                                      Description="Default security group for adam",
+                                                      VpcId=self.vpc_id)
+            else:
+                _ = self.client.create_security_group(GroupName=DEFAULT_SG_GROUP_NAME,
+                                                      Description="Default security group for adam")
+                print(_)
         except ClientError as e:
             error_code = e.response["Error"]["Code"]
             if error_code == "InvalidGroup.Duplicate":
@@ -94,35 +136,34 @@ class EC2(object):
                 raise e
 
         logger.debug("Setting up default values for the '%s' security group", DEFAULT_SG_GROUP_NAME)
-        collection = self.ec2.security_groups.filter(GroupNames=[DEFAULT_SG_GROUP_NAME])
-        security_group = [i for i in collection][0]
+        security_group = self.get_security_groups(DEFAULT_SG_GROUP_NAME)[0]
 
         IpPermissions = [
             {
-                'IpProtocol': 'tcp',
-                'FromPort': 0,
-                'ToPort': 65535,
-                'IpRanges': [
+                "IpProtocol": "tcp",
+                "FromPort": 0,
+                "ToPort": 65535,
+                "IpRanges": [
                     {
-                        'CidrIp': '0.0.0.0/0'
+                        "CidrIp": "0.0.0.0/0"
                     },
                 ],
             }, {
-                'IpProtocol': 'udp',
-                'FromPort': 0,
-                'ToPort': 65535,
-                'IpRanges': [
+                "IpProtocol": "udp",
+                "FromPort": 0,
+                "ToPort": 65535,
+                "IpRanges": [
                     {
-                        'CidrIp': '0.0.0.0/0'
+                        "CidrIp": "0.0.0.0/0"
                     },
                 ],
             }, {
-                'IpProtocol': 'icmp',
-                'FromPort': -1,
-                'ToPort': -1,
-                'IpRanges': [
+                "IpProtocol": "icmp",
+                "FromPort": -1,
+                "ToPort": -1,
+                "IpRanges": [
                     {
-                        'CidrIp': '0.0.0.0/0'
+                        "CidrIp": "0.0.0.0/0"
                     },
                 ],
             }
@@ -148,54 +189,69 @@ class EC2(object):
 
         return security_group
 
-    def get_security_group_ids(self, security_groups):
-        """Get the security group ids for the security group names on
-        `self.security_groups`
+    def check_image_is_ebs(self, image_id):
+        """Check if AMI is EBS based and raises an exception if not
         """
-        collection = self.ec2.security_groups.filter(GroupNames=security_groups)
-        return [i.id for i in collection]
+        images = self.client.describe_images(ImageIds=[image_id])
+        image = images["Images"][0]
 
-    def launch(self,
-               name,
-               image_id,
-               instance_type,
-               count,
-               keyname,
-               security_group=DEFAULT_SG_GROUP_NAME,
-               volume_type='gp2',
+        root_type = image["RootDeviceType"]
+        if root_type != "ebs":
+            raise DaskEc2Exception("The AMI {} Root Device Type is not EBS. Only EBS Root Device AMI are supported.".format(
+                image_id))
+
+    def launch(self, name, image_id, instance_type, count, keyname,
+               security_group_name=DEFAULT_SG_GROUP_NAME,
+               volume_type="gp2",
                volume_size=500,
-               keypair=None):
+               keypair=None,
+               tags=None,
+               check_ami=True):
+        tags = tags or []
         self.check_keyname(keyname)
-        if keypair:
-            self.check_keypair(keyname, keypair)
-        self.check_sg(security_group)
+        if check_ami:
+            self.check_image_is_ebs(image_id)
+        self.check_sg(security_group_name)
 
         device_map = [
             {
-                'DeviceName': '/dev/sda1',
-                'Ebs': {
-                    'VolumeSize': volume_size,
-                    'DeleteOnTermination': True,
-                    'VolumeType': volume_type,
+                "DeviceName": "/dev/sda1",
+                "Ebs": {
+                    "VolumeSize": volume_size,
+                    "DeleteOnTermination": True,
+                    "VolumeType": volume_type,
                 },
             },
         ]
 
         logger.debug("Creating %i instances on EC2", count)
-        instances = self.ec2.create_instances(
-            ImageId=image_id,
-            KeyName=keyname,
-            MinCount=count,
-            MaxCount=count,
-            InstanceType=instance_type,
-            SecurityGroups=[security_group],
-            SecurityGroupIds=self.get_security_group_ids([security_group]),
-            BlockDeviceMappings=device_map,)
+        if self.subnet_id is not None and self.subnet_id != "":
+            instances = self.ec2.create_instances(ImageId=image_id,
+                                                  KeyName=keyname,
+                                                  MinCount=count,
+                                                  MaxCount=count,
+                                                  InstanceType=instance_type,
+                                                  SecurityGroupIds=self.get_security_groups_ids(security_group_name),
+                                                  BlockDeviceMappings=device_map,
+                                                  SubnetId=self.subnet_id)
+        else:
+            instances = self.ec2.create_instances(ImageId=image_id,
+                                                  KeyName=keyname,
+                                                  MinCount=count,
+                                                  MaxCount=count,
+                                                  InstanceType=instance_type,
+                                                  SecurityGroupIds=self.get_security_groups_ids(security_group_name),
+                                                  BlockDeviceMappings=device_map)
+
         time.sleep(5)
 
         ids = [i.id for i in instances]
-        waiter = self.client.get_waiter('instance_running')
-        waiter.wait(InstanceIds=ids)
+        waiter = self.client.get_waiter("instance_running")
+        try:
+            waiter.wait(InstanceIds=ids)
+        except WaiterError:
+            raise DaskEc2Exception(
+                "An unexpected error occurred when launching the requested instances. Refer to the AWS Management Console for more information.")
 
         collection = self.ec2.instances.filter(InstanceIds=ids)
         instances = []
@@ -203,20 +259,31 @@ class EC2(object):
             instances.append(instance)
             if name:
                 logger.debug("Tagging instance '%s'", instance.id)
-                self.ec2.create_tags(Resources=[instance.id],
-                                     Tags=[
-                                         {
-                                             'Key': 'Name',
-                                             'Value': '{}-{}'.format(name, i)
-                                         },
-                                     ])
+                tags_ = [{"Key": "Name", "Value": "{0}-{1}".format(name, i)}]
+                for tag_pair in tags:
+                    parts = tag_pair.split(":")
+                    if len(parts) == 2:
+                        key = parts[0]
+                        value = parts[1]
+                    else:
+                        key = "Tag"
+                        value = tag_pair
+                    tags_.append({"Key": key, "Value": value})
+                self.ec2.create_tags(Resources=[instance.id], Tags=tags_)
 
         return instances
 
     def destroy(self, ids):
+        """Terminate a set of EC2 instances by ID
+
+        Parameters
+        ----------
+        ids : list of strings
+            The EC2 ids of the instances that should be terminated
+        """
         if ids is None or ids == []:
             raise DaskEc2Exception("Instances ids cannot be None or empty list")
         logger.debug("Terminating instances: %s", ids)
         self.ec2.instances.filter(InstanceIds=ids).terminate()
-        waiter = self.client.get_waiter('instance_terminated')
+        waiter = self.client.get_waiter("instance_terminated")
         waiter.wait(InstanceIds=ids)

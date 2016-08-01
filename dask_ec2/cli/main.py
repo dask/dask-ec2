@@ -1,5 +1,6 @@
 from __future__ import print_function, division, absolute_import
 
+import sys
 import click
 
 from botocore.exceptions import ClientError
@@ -58,6 +59,8 @@ def cli(ctx):
               show_default=True,
               required=False,
               help="AWS region")
+@click.option("--vpc-id", default=None, show_default=True, required=False, help="EC2 VPC ID")
+@click.option("--subnet-id", default=None, show_default=True, required=False, help="EC2 Subnet ID on the VPC")
 @click.option("--ami", default="ami-d05e75b8", show_default=True, required=False, help="EC2 AMI")
 @click.option("--username",
               default="ubuntu",
@@ -72,6 +75,7 @@ def cli(ctx):
               help="EC2 Instance Type")
 @click.option("--count", default=4, show_default=True, required=False, help="Number of nodes")
 @click.option("--security-group",
+              "security_group_name",
               default="dask-ec2-default",
               show_default=True,
               required=False,
@@ -121,8 +125,8 @@ def cli(ctx):
               show_default=True,
               required=False,
               help="Number of processes per worker")
-def up(ctx, name, keyname, keypair, region_name, ami, username, instance_type, count,
-       security_group, volume_type, volume_size, filepath, _provision, anaconda_, dask, notebook, nprocs):
+def up(ctx, name, keyname, keypair, region_name, vpc_id, subnet_id, ami, username, instance_type, count,
+       security_group_name, volume_type, volume_size, filepath, _provision, anaconda_, dask, notebook, nprocs):
     import os
     import yaml
     from ..ec2 import EC2
@@ -132,14 +136,14 @@ def up(ctx, name, keyname, keypair, region_name, ami, username, instance_type, c
             click.echo("Not doing anything")
             sys.exit(0)
 
-    driver = EC2(region=region_name)
+    driver = EC2(region=region_name, vpc_id=vpc_id, subnet_id=subnet_id)
     click.echo("Launching nodes")
     instances = driver.launch(name=name,
                               image_id=ami,
                               instance_type=instance_type,
                               count=count,
                               keyname=keyname,
-                              security_group=security_group,
+                              security_group_name=security_group_name,
                               volume_type=volume_type,
                               volume_size=volume_size,
                               keypair=keypair)
