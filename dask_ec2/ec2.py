@@ -15,7 +15,7 @@ DEFAULT_SG_GROUP_NAME = "dask-ec2-default"
 
 class EC2(object):
 
-    def __init__(self, region, vpc_id=None, subnet_id=None, default_vpc=False, default_subnet=False, test=True):
+    def __init__(self, region, vpc_id=None, subnet_id=None, default_vpc=True, default_subnet=True, test=True):
         self.ec2 = boto3.resource('ec2', region_name=region)
         self.client = boto3.client('ec2', region_name=region)
         self.vpc_id = self.get_default_vpc() if default_vpc else vpc_id
@@ -33,8 +33,10 @@ class EC2(object):
         ------
             If there is not a default VPC
         """
+        logger.debug("Searching for default VPC")
         for vpc in self.ec2.vpcs.all():
             if vpc.is_default:
+                logger.debug("Default VPC found - Using VPC ID: %s", vpc.id)
                 return vpc.id
         raise DaskEc2Exception("There is no default VPC, please pass VPC ID")
 
@@ -46,13 +48,16 @@ class EC2(object):
         ------
             If there is not a default subnet on the VPC
         """
+        logger.debug("Searching for default subnet in VPC %s", self.vpc_id)
         for vpc in self.ec2.vpcs.all():
             if vpc.id == self.vpc_id:
                 for subnet in vpc.subnets.all():
                     if availability_zone is None and subnet.default_for_az:
+                        logger.debug("Default subnet found - Using Subnet ID: %s", subnet.id)
                         return subnet.id
                     else:
                         if subnet.availability_zone == availability_zone and subnet.default_for_az:
+                            logger.debug("Default subnet found - Using Subnet ID: %s", subnet.id)
                             return subnet.id
         raise DaskEc2Exception("There is no default subnet on VPC %s, please pass a subnet ID" % self.vpc_id)
 
