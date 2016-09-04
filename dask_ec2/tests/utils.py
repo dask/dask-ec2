@@ -3,6 +3,7 @@ from __future__ import absolute_import, print_function, division
 import os
 import sys
 import pytest
+import boto3
 
 from click.testing import CliRunner
 
@@ -12,7 +13,8 @@ from dask_ec2.cli.main import cli
 @pytest.yield_fixture(scope="module")
 def driver():
     from dask_ec2.ec2 import EC2
-    driver = EC2(region="us-east-1")
+    driver = EC2(region="us-east-1", default_vpc=False, default_subnet=False, test=False)
+
     yield driver
 
 
@@ -28,7 +30,7 @@ def invoke(*args):
     return runner.invoke(cli, args, catch_exceptions=False, input=sys.stdin)
 
 
-@pytest.yield_fixture(scope="module")
+@pytest.yield_fixture(scope='module')
 def cluster():
     from dask_ec2 import Cluster
     clusterfile = os.environ['TEST_CLUSTERFILE']

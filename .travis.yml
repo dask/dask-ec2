@@ -68,4 +68,4 @@ install:
   - pip install dist/*.tar.gz
 
 script:
-  - py.test --pyargs dask_ec2 --cov=dask_ec2 --cov-report term-missing --cov-report html -s -vv
+  - travis_wait 50 py.test --pyargs dask_ec2 --cov=dask_ec2 --cov-report term-missing --cov-report html -s -vv

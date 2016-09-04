@@ -59,9 +59,10 @@ def test_from_boto3(driver):
                               instance_type=instance_type,
                               count=1,
                               keyname=keyname,
-                              security_group=DEFAULT_SG_GROUP_NAME,
+                              security_group_name=DEFAULT_SG_GROUP_NAME,
                               volume_type=volume_type,
                               volume_size=volume_size,
-                              keypair=keypair)
+                              keypair=keypair,
+                              check_ami=False)
 
     instance = Instance.from_boto3_instance(instances[0])

@@ -80,6 +80,12 @@ def cli(ctx):
               show_default=True,
               required=False,
               help="Security Group Name")
+@click.option("--security-group-id",
+              "security_group_id",
+              default=None,
+              show_default=True,
+              required=False,
+              help="Security Group ID (overwrites Security Group Name)")
 @click.option("--volume-type",
               default="gp2",
               show_default=True,
@@ -126,7 +132,7 @@ def cli(ctx):
               required=False,
               help="Number of processes per worker")
 def up(ctx, name, keyname, keypair, region_name, vpc_id, subnet_id, ami, username, instance_type, count,
-       security_group_name, volume_type, volume_size, filepath, _provision, anaconda_, dask, notebook, nprocs):
+       security_group_name, security_group_id, volume_type, volume_size, filepath, _provision, anaconda_, dask, notebook, nprocs):
     import os
     import yaml
     from ..ec2 import EC2
@@ -144,6 +150,7 @@ def up(ctx, name, keyname, keypair, region_name, vpc_id, subnet_id, ami, usernam
                               count=count,
                               keyname=keyname,
                               security_group_name=security_group_name,
+                              security_group_id=security_group_id,
                               volume_type=volume_type,
                               volume_size=volume_size,
                               keypair=keypair)

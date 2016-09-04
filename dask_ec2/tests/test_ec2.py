@@ -28,11 +28,13 @@ def test_launch_no_keyname(driver):
                       instance_type=instance_type,
                       count=count,
                       keyname=keyname,
-                      security_group=DEFAULT_SG_GROUP_NAME,
+                      security_group_name=DEFAULT_SG_GROUP_NAME,
                       volume_type=volume_type,
                       volume_size=volume_size,
-                      keypair=keypair)
+                      keypair=keypair,
+                      check_ami=False)
     assert "The keyname 'mykey' does not exist, please create it in the EC2 console" == str(e.value)
+
     collection = driver.ec2.instances.filter()
     instances = [i for i in collection]
     assert len(instances) == 0
@@ -44,10 +46,11 @@ def test_launch_no_keyname(driver):
                   instance_type=instance_type,
                   count=count,
                   keyname=keyname,
-                  security_group=DEFAULT_SG_GROUP_NAME,
+                  security_group_name=DEFAULT_SG_GROUP_NAME,
                   volume_type=volume_type,
                   volume_size=volume_size,
-                  keypair=keypair)
+                  keypair=keypair,
+                  check_ami=False)
 
     collection = driver.ec2.instances.filter()
     instances = [i for i in collection]
@@ -55,7 +58,6 @@ def test_launch_no_keyname(driver):
 
 
 @mock_ec2
-@pytest.mark.skip(reason="test is broken")
 def test_create_default_security_group(driver):
     collection = driver.ec2.security_groups.filter()
     sgs = [i for i in collection]
@@ -78,11 +80,11 @@ def test_create_default_security_group(driver):
     assert default_sg.ip_permissions[0]['IpProtocol'] == 'tcp'
     assert default_sg.ip_permissions[0]['IpRanges'] == [{'CidrIp': '0.0.0.0/0'}]
 
-    assert len(default_sg.ip_permissions_egress) == 1
-    assert default_sg.ip_permissions_egress[0]['FromPort'] == 0
-    assert default_sg.ip_permissions_egress[0]['ToPort'] == 65535
-    assert default_sg.ip_permissions_egress[0]['IpProtocol'] == 'tcp'
-    assert default_sg.ip_permissions_egress[0]['IpRanges'] == [{'CidrIp': '0.0.0.0/0'}]
+    assert len(default_sg.ip_permissions_egress) == 2
+    assert default_sg.ip_permissions_egress[1]['FromPort'] == 0
+    assert default_sg.ip_permissions_egress[1]['ToPort'] == 65535
+    assert default_sg.ip_permissions_egress[1]['IpProtocol'] == 'tcp'
+    assert default_sg.ip_permissions_egress[1]['IpRanges'] == [{'CidrIp': '0.0.0.0/0'}]
 
 
 @mock_ec2

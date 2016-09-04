@@ -16,8 +16,9 @@ DEFAULT_SG_GROUP_NAME = "dask-ec2-default"
 class EC2(object):
 
     def __init__(self, region, vpc_id=None, subnet_id=None, default_vpc=True, default_subnet=True, test=True):
-        self.ec2 = boto3.resource('ec2', region_name=region)
-        self.client = boto3.client('ec2', region_name=region)
+        self.ec2 = boto3.resource("ec2", region_name=region)
+        self.client = boto3.client("ec2", region_name=region)
+
         self.vpc_id = self.get_default_vpc() if default_vpc else vpc_id
         self.subnet_id = self.get_default_subnet() if default_subnet else subnet_id
 
@@ -207,6 +208,7 @@ class EC2(object):
 
     def launch(self, name, image_id, instance_type, count, keyname,
                security_group_name=DEFAULT_SG_GROUP_NAME,
+               security_group_id=None,
                volume_type="gp2",
                volume_size=500,
                keypair=None,
@@ -229,6 +231,11 @@ class EC2(object):
             },
         ]
 
+        if security_group_id is not None:
+            security_groups_ids = [security_group_id]
+        else:
+            security_groups_ids = self.get_security_groups_ids(security_group_name)
+
         logger.debug("Creating %i instances on EC2", count)
         if self.subnet_id is not None and self.subnet_id != "":
             instances = self.ec2.create_instances(ImageId=image_id,
@@ -236,7 +243,7 @@ class EC2(object):
                                                   MinCount=count,
                                                   MaxCount=count,
                                                   InstanceType=instance_type,
-                                                  SecurityGroupIds=self.get_security_groups_ids(security_group_name),
+                                                  SecurityGroupIds=security_groups_ids,
                                                   BlockDeviceMappings=device_map,
                                                   SubnetId=self.subnet_id)
         else:

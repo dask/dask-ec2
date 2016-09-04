@@ -113,7 +113,7 @@ def test_check_ssh(cluster):
     response = cluster.check_ssh()
     assert len(response) == len(cluster.instances)
     for address, status in response.items():
-        assert status == True
+        assert status is True
 
 
 @mock_ec2
@@ -127,7 +127,7 @@ def test_from_boto3(driver):
     keypair = None    # Skip check
     volume_type = "gp2"
     volume_size = 500
-    security_group = "another-sg"
+    # security_group = "another-sg"
 
     driver.ec2.create_key_pair(KeyName=keyname)
     instances = driver.launch(name=name,
@@ -135,9 +135,10 @@ def test_from_boto3(driver):
                               instance_type=instance_type,
                               count=count,
                               keyname=keyname,
-                              security_group=DEFAULT_SG_GROUP_NAME,
+                              security_group_name=DEFAULT_SG_GROUP_NAME,
                               volume_type=volume_type,
                               volume_size=volume_size,
-                              keypair=keypair)
+                              keypair=keypair,
+                              check_ami=False)
 
     instance = Cluster.from_boto3_instances(instances)

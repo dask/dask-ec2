@@ -3,6 +3,7 @@ Utilies to manage salt bootstrap and other stuff
 """
 import os
 import logging
+import itertools
 import threading
 
 import dask_ec2
@@ -146,6 +147,10 @@ def install_salt_master(cluster):
 
     @retry(retries=3, wait=0)
     def __install_salt_rest_api():
+        cmd = "apt-get install -y python-pip"
+        ret = master.exec_command(cmd, sudo=True)
+        if ret["exit_code"] != 0:
+            raise Exception(ret["stderr"].decode('utf-8'))
         cmd = "pip install cherrypy"
         ret = master.exec_command(cmd, sudo=True)
         if ret["exit_code"] != 0:
