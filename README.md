@@ -5,18 +5,18 @@ Jupyter Notebooks, and Anaconda.
 
 ## Installation
 
-You can install `dask-ec2` and its dependencies from the
-[conda-forge](https://conda-forge.github.io/>) repository using
+You also install `dask-ec2` using pip:
+
+```bash
+$ pip install dask-ec2
+```
+
+You can also install `dask-ec2` and its dependencies from the
+[conda-forge](https://conda-forge.github.io/) repository using
 [conda](https://www.continuum.io/downloads):
 
 ```bash
 $ conda install dask-ec2 -c conda-forge
-```
-
-You can also install `dask-ec2` using pip:
-
-```bash
-$ pip install dask-ec2
 ```
 
 ## Usage
