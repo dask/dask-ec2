@@ -146,11 +146,20 @@ def install_salt_master(cluster):
             e.last_exception)
 
     @retry(retries=3, wait=0)
-    def __install_salt_rest_api():
+    def __install_python_pip():
         cmd = "apt-get install -y python-pip"
         ret = master.exec_command(cmd, sudo=True)
         if ret["exit_code"] != 0:
             raise Exception(ret["stderr"].decode('utf-8'))
+
+    try:
+        __install_python_pip()
+    except RetriesExceededException as e:
+        raise DaskEc2Exception("%s\nCouldn't install python-pip. Error is above (maybe try again)" %
+                               e.last_exception)
+
+    @retry(retries=3, wait=0)
+    def __install_salt_rest_api():
         cmd = "pip install cherrypy"
         ret = master.exec_command(cmd, sudo=True)
         if ret["exit_code"] != 0:

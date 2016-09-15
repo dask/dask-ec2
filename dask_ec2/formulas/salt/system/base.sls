@@ -6,3 +6,6 @@ git-pkg:
 /etc/security/limits.conf:
   file.append:
     - source: salt://system/templates/limits.conf
+
+python-pip:
+  pkg.installed
