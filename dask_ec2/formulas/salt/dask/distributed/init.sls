@@ -25,8 +25,15 @@ distributed-install:
     - require:
       - sls: conda
 
+update-pyopenssl:
+  cmd.run:
+    - name: CONDA_SSL_VERIFY=false {{ install_prefix }}/bin/conda update pyopenssl
+    - require:
+      - sls: conda
+
 update-pandas:
   cmd.run:
     - name: {{ install_prefix }}/bin/conda update pandas
     - require:
+      - update-pyopenssl
       - pip: distributed-install
