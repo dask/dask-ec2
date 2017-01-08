@@ -20,10 +20,15 @@ from ..salt import upload_pillar
               show_default=True,
               required=False,
               help="Number of processes per worker")
+@click.option("--source/--no-source",
+              is_flag=True,
+              default=False,
+              show_default=True,
+              help="Install Dask/Distributed from git master")
 @click.pass_context
-def dask(ctx, filepath, nprocs):
+def dask(ctx, filepath, nprocs, source):
     if ctx.invoked_subcommand is None:
-        ctx.invoke(dask_install, filepath=filepath, nprocs=nprocs)
+        ctx.invoke(dask_install, filepath=filepath, nprocs=nprocs, source=source)
 
 
 @dask.command("install", short_help="Start a dask.distributed cluster")
@@ -45,11 +50,17 @@ def dask(ctx, filepath, nprocs):
               show_default=True,
               required=False,
               help="Number of processes per worker")
-def dask_install(ctx, filepath, shell, nprocs):
+@click.option("--source/--no-source",
+              is_flag=True,
+              default=False,
+              show_default=True,
+              help="Install Dask/Distributed from git master")
+def dask_install(ctx, filepath, shell, nprocs, source):
     cluster = Cluster.from_filepath(filepath)
     scheduler_public_ip = cluster.instances[0].ip
     upload_pillar(cluster, "dask.sls", {"dask": {
                                             "scheduler_public_ip": scheduler_public_ip,
+                                            "source_install": source,
                                             "dask-worker": {
                                                 "nprocs": nprocs
                                             }

@@ -131,8 +131,14 @@ def cli(ctx):
               show_default=True,
               required=False,
               help="Number of processes per worker")
+@click.option("--source/--no-source",
+              is_flag=True,
+              default=False,
+              show_default=True,
+              help="Install Dask/Distributed from git master")
 def up(ctx, name, keyname, keypair, region_name, vpc_id, subnet_id, ami, username, instance_type, count,
-       security_group_name, security_group_id, volume_type, volume_size, filepath, _provision, anaconda_, dask, notebook, nprocs):
+       security_group_name, security_group_id, volume_type, volume_size, filepath, _provision, anaconda_,
+       dask, notebook, nprocs, source):
     import os
     import yaml
     from ..ec2 import EC2
@@ -162,7 +168,8 @@ def up(ctx, name, keyname, keypair, region_name, vpc_id, subnet_id, ami, usernam
         yaml.safe_dump(cluster.to_dict(), f, default_flow_style=False)
 
     if _provision:
-        ctx.invoke(provision, filepath=filepath, anaconda_=anaconda_, dask=dask, notebook=notebook, nprocs=nprocs)
+        ctx.invoke(provision, filepath=filepath, anaconda_=anaconda_, dask=dask,
+                   notebook=notebook, nprocs=nprocs, source=source)
 
 
 @cli.command(short_help="Destroy cluster")
@@ -277,7 +284,12 @@ def ssh(ctx, node, filepath):
               show_default=True,
               required=False,
               help="Number of processes per worker")
-def provision(ctx, filepath, ssh_check, master, minions, upload, anaconda_, dask, notebook, nprocs):
+@click.option("--source/--no-source",
+              is_flag=True,
+              default=False,
+              show_default=True,
+              help="Install Dask/Distributed from git master")
+def provision(ctx, filepath, ssh_check, master, minions, upload, anaconda_, dask, notebook, nprocs, source):
     import six
     from ..salt import install_salt_master, install_salt_minion, upload_formulas, upload_pillar
 
@@ -306,7 +318,7 @@ def provision(ctx, filepath, ssh_check, master, minions, upload, anaconda_, dask
         ctx.invoke(anaconda, filepath=filepath)
     if dask:
         from .daskd import dask_install
-        ctx.invoke(dask_install, filepath=filepath, nprocs=nprocs)
+        ctx.invoke(dask_install, filepath=filepath, nprocs=nprocs, source=source)
     if notebook:
         ctx.invoke(notebook_install, filepath=filepath)
 
