@@ -4,10 +4,9 @@ include:
   - conda
   - system.base
 
-dask-install:
-  pip.installed:
-    - name: dask
-    - bin_env: {{ install_prefix }}/bin/pip
+update-pyopenssl:
+  cmd.run:
+    - name: CONDA_SSL_VERIFY=false {{ install_prefix }}/bin/conda update pyopenssl -y -q
     - require:
       - sls: conda
 
@@ -17,23 +16,15 @@ bokeh-install:
     - require:
       - sls: conda
 
-distributed-install:
-  pip.installed:
-    - name: distributed
-    - upgrade: true
-    - bin_env: {{ install_prefix }}/bin/pip
+dask-install:
+  cmd.run:
+    - name: {{ install_prefix }}/bin/conda install dask distributed -y -q -c conda-forge
     - require:
       - sls: conda
 
-update-pyopenssl:
-  cmd.run:
-    - name: CONDA_SSL_VERIFY=false {{ install_prefix }}/bin/conda update pyopenssl
-    - require:
-      - sls: conda
 
 update-pandas:
   cmd.run:
-    - name: {{ install_prefix }}/bin/conda update pandas
+    - name: {{ install_prefix }}/bin/conda update pandas -y -q
     - require:
       - update-pyopenssl
-      - pip: distributed-install

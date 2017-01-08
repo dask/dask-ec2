@@ -4,26 +4,26 @@ include:
   - supervisor
   - dask.distributed
 
-dworker.conf:
+dask-worker.conf:
   file.managed:
-    - name: {{ conf_d }}/dworker.conf
-    - source: salt://dask/distributed/templates/dworker.conf
+    - name: {{ conf_d }}/dask-worker.conf
+    - source: salt://dask/distributed/templates/dask-worker.conf
     - template: jinja
     - makedirs: true
     - require:
       - sls: supervisor
       - sls: dask.distributed
 
-dworker-update-supervisor:
+dask-worker-update-supervisor:
   cmd.wait:
     - name: {{ supervisorctl }} -c {{ supervisord_conf }} update && sleep 2
     - watch:
-      - file: dworker.conf
+      - file: dask-worker.conf
 
-dworker-running:
+dask-worker-running:
   supervisord.running:
-    - name: dworker
+    - name: dask-worker
     - watch:
       - sls: dask.distributed
-      - file: dworker.conf
-      - cmd: dworker-update-supervisor
+      - file: dask-worker.conf
+      - cmd: dask-worker-update-supervisor

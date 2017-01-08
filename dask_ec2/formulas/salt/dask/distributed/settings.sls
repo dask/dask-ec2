@@ -11,4 +11,4 @@
 {% set roles = grains['roles'] %}
 {% set is_scheduler = 'dask.distributed.scheduler' in roles %}
 {% set is_worker = 'dask.distributed.worker' in roles %}
-{% set nprocs = salt['pillar.get']('dask:dworker:nprocs', 1)  %}
+{% set nprocs = salt['pillar.get']('dask:dask-worker:nprocs', 1)  %}

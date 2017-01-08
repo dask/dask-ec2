@@ -1,36 +1,36 @@
 {%- from 'conda/settings.sls' import install_prefix, download_url with context %}
 
-miniconda-curl:
+anaconda-curl:
   pkg.installed:
     - name: curl
 
-miniconda-download:
+anaconda-download:
   cmd.run:
-    - name: curl -k {{ download_url }} > /tmp/miniconda.sh
+    - name: curl -k {{ download_url }} > /tmp/anaconda.sh
     - unless: test -e {{ install_prefix }}
     - require:
-      - pkg: miniconda-curl
+      - pkg: anaconda-curl
 
-miniconda-install:
+anaconda-install:
   cmd.run:
-    - name: bash /tmp/miniconda.sh -b -p {{ install_prefix }}
+    - name: bash /tmp/anaconda.sh -b -p {{ install_prefix }}
     - unless: test -e {{ install_prefix }}
     - require:
-      - cmd: miniconda-download
+      - cmd: anaconda-download
 
 remove-anconda:
   # LOLZ
   cmd.run:
-    - name: {{ install_prefix }}/bin/conda remove anaconda || true
+    - name: {{ install_prefix }}/bin/conda remove anaconda -q -y || true
     - require:
-      - cmd: miniconda-install
+      - cmd: anaconda-install
 
-miniconda-pip:
+anaconda-pip:
   cmd.run:
     - name: {{ install_prefix }}/bin/conda install pip -y -q
     - unless: test -e {{ install_prefix }}/bin/pip
     - require:
-      - cmd: miniconda-install
+      - cmd: anaconda-install
 
 /etc/profile.d/conda.sh:
   file.managed:
@@ -40,4 +40,4 @@ miniconda-pip:
     - mode: 666
     - template: jinja
     - require:
-      - cmd: miniconda-install
+      - cmd: anaconda-install

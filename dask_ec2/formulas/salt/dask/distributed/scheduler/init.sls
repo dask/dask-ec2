@@ -4,26 +4,26 @@ include:
   - supervisor
   - dask.distributed
 
-dscheduler.conf:
+dask-scheduler.conf:
   file.managed:
-    - name: {{ conf_d }}/dscheduler.conf
-    - source: salt://dask/distributed/templates/dscheduler.conf
+    - name: {{ conf_d }}/dask-scheduler.conf
+    - source: salt://dask/distributed/templates/dask-scheduler.conf
     - template: jinja
     - makedirs: true
     - require:
       - sls: supervisor
       - sls: dask.distributed
 
-dscheduler-update-supervisor:
+dask-scheduler-update-supervisor:
   cmd.wait:
     - name: {{ supervisorctl }} -c {{ supervisord_conf }} update && sleep 2
     - watch:
-      - file: dscheduler.conf
+      - file: dask-scheduler.conf
 
-dscheduler-running:
+dask-scheduler-running:
   supervisord.running:
-    - name: dscheduler
+    - name: dask-scheduler
     - watch:
       - sls: dask.distributed
-      - file: dscheduler.conf
-      - cmd: dscheduler-update-supervisor
+      - file: dask-scheduler.conf
+      - cmd: dask-scheduler-update-supervisor

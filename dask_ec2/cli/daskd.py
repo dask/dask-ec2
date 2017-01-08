@@ -50,7 +50,7 @@ def dask_install(ctx, filepath, shell, nprocs):
     scheduler_public_ip = cluster.instances[0].ip
     upload_pillar(cluster, "dask.sls", {"dask": {
                                             "scheduler_public_ip": scheduler_public_ip,
-                                            "dworker": {
+                                            "dask-worker": {
                                                 "nprocs": nprocs
                                             }
                                         }})

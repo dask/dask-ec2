@@ -74,13 +74,13 @@ def test_create_default_security_group(driver):
 
     default_sg = driver.ec2.SecurityGroup(created_sg.id)
 
-    assert len(default_sg.ip_permissions) == 1
+    assert len(default_sg.ip_permissions) == 3
     assert default_sg.ip_permissions[0]['FromPort'] == 0
     assert default_sg.ip_permissions[0]['ToPort'] == 65535
     assert default_sg.ip_permissions[0]['IpProtocol'] == 'tcp'
     assert default_sg.ip_permissions[0]['IpRanges'] == [{'CidrIp': '0.0.0.0/0'}]
 
-    assert len(default_sg.ip_permissions_egress) == 2
+    assert len(default_sg.ip_permissions_egress) == 4
     assert default_sg.ip_permissions_egress[1]['FromPort'] == 0
     assert default_sg.ip_permissions_egress[1]['ToPort'] == 65535
     assert default_sg.ip_permissions_egress[1]['IpProtocol'] == 'tcp'
