@@ -4,6 +4,7 @@ services:
   head:
     build: .
     hostname: head
+    container_name: ci_head_1
     ports:
       - "2222:22"
       - "4505:4505"

@@ -39,6 +39,7 @@ before_install:
   - export PATH="$HOME/miniconda/bin:$PATH"
   - conda config --set always_yes yes --set changeps1 no
   - conda update conda
+  - conda --version
 
   # Install dependencies
   - conda create -n test-environment python=$TRAVIS_PYTHON_VERSION
@@ -51,8 +52,20 @@ before_install:
 
 install:
   - which python
-  - python setup.py sdist
+  - python setup.py sdist --quiet
   - pip install dist/*.tar.gz
 
 script:
-  - travis_wait 50 py.test --pyargs dask_ec2 --cov=dask_ec2 --cov-report term-missing --cov-report html -s -vv
+  - travis_wait 30 py.test --cov=dask_ec2 --cov-report term-missing -s -vv --durations=0
+
+after_success:
+   - pip install coveralls
+   - coveralls
+
+after_failure:
+   - docker exec -it ci_head_1 /bin/bash -c 'ps aux | grep salt'
+   - docker exec -it ci_head_1 /bin/bash -c 'cat /var/log/salt/minion'
+   - docker exec -it ci_head_1 /bin/bash -c 'cat /var/log/salt/master'
+   - conda list
+   - docker exec -it ci_head_1 /bin/bash -c 'salt "*" test.ping'
+
