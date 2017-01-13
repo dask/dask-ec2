@@ -1,0 +1,13 @@
+{%- from 'jupyter/notebook/settings.sls' import ip, port, plain_password, hash_password with context -%}
+
+c = get_config()
+
+# Kernel config
+c.IPKernelApp.pylab = "inline"  # if you want plotting support always
+
+# Notebook config
+c.NotebookApp.ip = '0.0.0.0'
+c.NotebookApp.port = 8888
+c.NotebookApp.port_retries = 0
+c.NotebookApp.open_browser = False
+c.NotebookApp.password = u'{{ hash_password }}'

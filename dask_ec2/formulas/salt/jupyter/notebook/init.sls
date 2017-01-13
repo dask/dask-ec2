@@ -5,6 +5,15 @@ include:
   - jupyter
   - supervisor
 
+jupyter_notebook_config.py:
+  file.managed:
+    - name: {{ jupyter_config_dir ~ 'jupyter_notebook_config.py' }}
+    - makedirs: true
+    - source: salt://jupyter/templates/jupyter_notebook_config_py
+    - template: jinja
+    - user: {{ user }}
+    - group: {{ user }}
+
 jupyter-notebook.conf:
   file.managed:
     - name: {{ conf_d }}/jupyter-notebook.conf
@@ -14,11 +23,26 @@ jupyter-notebook.conf:
     - require:
       - sls: supervisor
 
+examples:
+  git.latest:
+    - name: https://github.com/dask/dask-ec2.git
+    - target: /tmp/dask-ec2
+
+link_examples:
+  file.symlink:
+    - name: {{ notebooks_dir }}/examples
+    - target: /tmp/dask-ec2/notebooks
+    - force: True
+
 notebooks-dir:
   file.directory:
-    - name: {{ notebooks_dir }}
+    - name: {{ notebooks_dir }}/examples
     - user: {{ user }}
     - group: {{ user }}
+    - recurse:
+      - user
+      - group
+
 
 notebook-update-supervisor:
   cmd.wait:
