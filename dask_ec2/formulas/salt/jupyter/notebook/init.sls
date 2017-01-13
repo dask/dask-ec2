@@ -23,7 +23,14 @@ jupyter-notebook.conf:
     - require:
       - sls: supervisor
 
-examples:
+notebooks-dir:
+  file.directory:
+    - name: {{ notebooks_dir }}
+    - user: {{ user }}
+    - group: {{ user }}
+    - makedirs: True
+
+git_examples:
   git.latest:
     - name: https://github.com/dask/dask-ec2.git
     - target: /tmp/dask-ec2
@@ -33,15 +40,6 @@ link_examples:
     - name: {{ notebooks_dir }}/examples
     - target: /tmp/dask-ec2/notebooks
     - force: True
-
-notebooks-dir:
-  file.directory:
-    - name: {{ notebooks_dir }}/examples
-    - user: {{ user }}
-    - group: {{ user }}
-    - recurse:
-      - user
-      - group
 
 
 notebook-update-supervisor:
