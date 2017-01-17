@@ -34,12 +34,16 @@ git_examples:
   git.latest:
     - name: https://github.com/dask/dask-ec2.git
     - target: /tmp/dask-ec2
+    - user: {{ user }}
+
 
 link_examples:
   file.symlink:
     - name: {{ notebooks_dir }}/examples
     - target: /tmp/dask-ec2/notebooks
     - force: True
+    - user: {{ user }}
+    - group: {{ user }}
 
 
 notebook-update-supervisor:

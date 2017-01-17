@@ -1,7 +1,9 @@
 
 git-pkg:
   pkg.installed:
-    - name: git
+    - pkgs:
+      - git
+      - graphviz
 
 /etc/security/limits.conf:
   file.append:

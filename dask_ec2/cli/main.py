@@ -312,8 +312,13 @@ def provision(ctx, filepath, ssh_check, master, minions, upload, anaconda_, dask
     if upload:
         click.echo("Uploading salt formulas")
         upload_formulas(cluster)
-        click.echo("Uploading conda settings")
+        click.echo("Uploading conda and cluster settings")
         upload_pillar(cluster, "conda.sls", {"conda": {"pyversion": 2 if six.PY2 else 3}})
+        upload_pillar(cluster, "cluster.sls",
+                      {"cluster": {
+                          "username": cluster.instances[0].username
+                        }
+                      })
     if anaconda_:
         ctx.invoke(anaconda, filepath=filepath)
     if dask:

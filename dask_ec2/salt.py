@@ -39,22 +39,26 @@ class Response(dict):
         Usefull when the Command module return a dictionary, for example state.sls
         Default values are for salt module `state.sls`
         """
-        ret = Response()
-        for minion_id, values in self.items():
-            inner_values = []
-            if type(values) == dict:
-                # Assumes: depth=1 going to flat
-                for key, value in values.items():
-                    value['name'] = key
-                    inner_values.append(value)
-            elif type(self[minion_id]) == list:
-                inner_values = self[minion_id]
+        try:
+            ret = Response()
+            for minion_id, values in self.items():
+                inner_values = []
+                if type(values) == dict:
+                    # Assumes: depth=1 going to flat
+                    for key, value in values.items():
+                        value['name'] = key
+                        inner_values.append(value)
+                elif type(self[minion_id]) == list:
+                    inner_values = self[minion_id]
 
-            successful = [action for action in inner_values if action[field] == validation]
-            failed = [action for action in inner_values if action[field] != validation]
-            summary = {'successful': successful, 'failed': failed}
-            ret[minion_id] = summary
-        return ret
+                successful = [action for action in inner_values if action[field] == validation]
+                failed = [action for action in inner_values if action[field] != validation]
+                summary = {'successful': successful, 'failed': failed}
+                ret[minion_id] = summary
+                return ret
+        except TypeError:
+            logger.debug("Error with salt state.  Printing full returned output")
+            logger.debug(self)
 
     def aggregated_to_table(self, agg=None):
         """

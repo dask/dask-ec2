@@ -3,7 +3,7 @@ sudo: true
 
 python:
   - 2.7
-  # - 3.5
+  - 3.5
 
 notifications:
   email: false
@@ -42,8 +42,9 @@ before_install:
   - conda --version
 
   # Install dependencies
-  - conda create -n test-environment python=$TRAVIS_PYTHON_VERSION
-  - source activate test-environment
+  - conda create -n dask-ec2 python=$TRAVIS_PYTHON_VERSION
+  - source activate dask-ec2
+  - conda env update -f ./environment.yml
   - pip install -r requirements.txt
 
   # Mock credentials
@@ -56,6 +57,9 @@ install:
   - pip install dist/*.tar.gz
 
 script:
+  # boto has issues with python3 on travisCI
+  # https://github.com/boto/boto/issues/3263
+  - export BOTO_CONFIG=/tmp/bogusvalue
   - travis_wait 30 py.test --cov=dask_ec2 --cov-report term-missing -s -vv --durations=0
 
 after_success:

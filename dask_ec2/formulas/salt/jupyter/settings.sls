@@ -5,4 +5,4 @@
 {%- set jupyter_config_dir = '/' ~ home_dir ~ '/.jupyter/' %}
 
 {%- set port = 8888 %}
-{%- set notebooks_dir = '/' ~ user ~ '/notebooks' %}
+{%- set notebooks_dir = '/' ~ home_dir ~ '/notebooks' %}

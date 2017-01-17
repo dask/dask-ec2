@@ -7,9 +7,9 @@ dependencies:
   - click
   - boto3
   - pytest
+  - coverage
+  - pytest-cov
+  - pylint
   - pip:
-    - coverage
-    - pytest-cov
     - moto
-    - pylint
     - twine
