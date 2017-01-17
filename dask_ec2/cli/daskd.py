@@ -114,8 +114,8 @@ To connect from the cluster
 dask-ec2 ssh  # ssh into head node
 ipython  # start ipython shell
 
-from distributed import Executor, s3, progress
-e = Executor('127.0.0.1:8786')  # Connect to scheduler running on the head node
+from dask.distributed import Client, progress
+c = Client(127.0.0.1:8786')  # Connect to scheduler running on the head node
 
 To connect locally
 ------------------
@@ -124,8 +124,8 @@ Note: this requires you to have identical environments on your local machine and
 
 ipython  # start ipython shell
 
-from distributed import Executor, s3, progress
-e = Executor({0})  # Connect to scheduler running on the head node
+from dask.distributed import Client, progress
+e = Client('{0}:8786')  # Connect to scheduler running on the head node
 
 To destroy
 ----------
