@@ -61,6 +61,7 @@ def cli(ctx):
               help="AWS region")
 @click.option("--vpc-id", default=None, show_default=True, required=False, help="EC2 VPC ID")
 @click.option("--subnet-id", default=None, show_default=True, required=False, help="EC2 Subnet ID on the VPC")
+@click.option("--iaminstance-name", default=None, show_default=True, required=False, help="IAM Instance Name")
 @click.option("--ami", default="ami-d05e75b8", show_default=True, required=False, help="EC2 AMI")
 @click.option("--username",
               default="ubuntu",
@@ -136,7 +137,8 @@ def cli(ctx):
               default=False,
               show_default=True,
               help="Install Dask/Distributed from git master")
-def up(ctx, name, keyname, keypair, region_name, vpc_id, subnet_id, ami, username, instance_type, count,
+def up(ctx, name, keyname, keypair, region_name, vpc_id, subnet_id,
+       iaminstance_name, ami, username, instance_type, count,
        security_group_name, security_group_id, volume_type, volume_size, filepath, _provision, anaconda_,
        dask, notebook, nprocs, source):
     import os
@@ -148,7 +150,9 @@ def up(ctx, name, keyname, keypair, region_name, vpc_id, subnet_id, ami, usernam
             click.echo("Not doing anything")
             sys.exit(0)
 
-    driver = EC2(region=region_name, vpc_id=vpc_id, subnet_id=subnet_id)
+    driver = EC2(region=region_name, vpc_id=vpc_id, subnet_id=subnet_id,
+                 default_vpc=not(vpc_id), default_subnet=not(subnet_id),
+                 iaminstance_name=iaminstance_name)
     click.echo("Launching nodes")
     instances = driver.launch(name=name,
                               image_id=ami,
@@ -195,7 +199,8 @@ def destroy(ctx, filepath, yes, region_name):
 
     question = 'Are you sure you want to destroy the cluster?'
     if yes or click.confirm(question):
-        driver = EC2(region=region_name)
+        driver = EC2(region=region_name, default_vpc=False, default_subnet=False)
+        #needed if there is no default vpc or subnet
         ids = [i.uid for i in cluster.instances]
         click.echo("Terminating instances")
         driver.destroy(ids)
