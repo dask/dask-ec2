@@ -22,13 +22,13 @@ bokeh-install:
 {%- if py_version == 2 %}
 dask-install:
   cmd.run:
-    - name: {{ install_prefix }}/bin/conda install dask distributed -y -q -c conda-forge
+    - name: {{ install_prefix }}/bin/conda install dask distributed s3fs -y -q -c conda-forge
     - require:
       - sls: conda
 {% else %}
 dask-install:
   cmd.run:
-    - name: {{ install_prefix }}/bin/conda install dask distributed fastparquet -y -q -c conda-forge
+    - name: {{ install_prefix }}/bin/conda install dask distributed fastparquet s3fs -y -q -c conda-forge
     - require:
       - sls: conda
 
