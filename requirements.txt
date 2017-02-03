@@ -1,7 +1,7 @@
 six
 click
 paramiko
-boto3
+boto3==1.4.3
 pyyaml
 
 # Test

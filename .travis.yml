@@ -55,6 +55,7 @@ install:
   - which python
   - python setup.py sdist --quiet
   - pip install dist/*.tar.gz
+  - conda list
 
 script:
   # boto has issues with python3 on travisCI

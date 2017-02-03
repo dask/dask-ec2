@@ -163,6 +163,20 @@ def install_salt_master(cluster):
                                e.last_exception)
 
     @retry(retries=3, wait=0)
+    def __upgrade_pip():
+        cmd = "pip install --upgrade pip packaging appdirs six"
+        ret = master.exec_command(cmd, sudo=True)
+        if ret["exit_code"] != 0:
+            raise Exception(ret["stderr"])
+
+    try:
+        __upgrade_pip()
+    except RetriesExceededException as e:
+        raise DaskEc2Exception(
+            "%s\nCouldn't upgrade pip. Error is above (maybe try again)" %
+            e.last_exception)
+
+    @retry(retries=3, wait=0)
     def __install_salt_rest_api():
         cmd = "pip install cherrypy"
         ret = master.exec_command(cmd, sudo=True)
@@ -177,10 +191,10 @@ def install_salt_master(cluster):
 
     @retry(retries=3, wait=0)
     def __install_pyopensll():
-        cmd = "pip install PyOpenSSL"
+        cmd = "pip install PyOpenSSL==16.2.0"
         ret = master.exec_command(cmd, sudo=True)
         if ret["exit_code"] != 0:
-            raise Exception(ret["stderr"].decode('utf-8'))
+            raise Exception(ret["stderr"])
 
     try:
         __install_pyopensll()
