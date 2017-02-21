@@ -1,3 +1,4 @@
+region: foo
 instances:
 - ip: ci_head_1
   keypair: ~/.vagrant.d/insecure_private_key

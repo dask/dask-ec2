@@ -10,12 +10,12 @@ from .utils import remotetest, cluster, driver
 
 
 def test_cluster():
-    cluster = Cluster()
+    cluster = Cluster("foo")
     assert len(cluster.instances) == 0
 
 
 def test_append_instance():
-    cluster = Cluster()
+    cluster = Cluster("foo")
     n = 5
     for i in range(n):
         instance = Instance(ip="%i" % i)
@@ -26,13 +26,13 @@ def test_append_instance():
 
 
 def test_append_non_instance_type():
-    cluster = Cluster()
+    cluster = Cluster("foo")
     with pytest.raises(DaskEc2Exception) as excinfo:
         cluster.append({"wrong": "type"})
 
 
 def test_set_username():
-    cluster = Cluster()
+    cluster = Cluster("foo")
     n = 5
     for i in range(n):
         instance = Instance(ip="%i" % i)
@@ -47,7 +47,7 @@ def test_set_username():
 
 
 def test_set_keypair():
-    cluster = Cluster()
+    cluster = Cluster("foo")
     n = 5
     for i in range(n):
         instance = Instance(ip="%i" % i)
@@ -62,7 +62,7 @@ def test_set_keypair():
 
 
 def test_dict_serde():
-    cluster = Cluster()
+    cluster = Cluster("foo")
     username = "user"
     keypair="~/.ssh/key"
     n = 5
@@ -87,7 +87,7 @@ def test_from_filepath(request, tmpdir):
     tempdir = tmpdir.mkdir("rootdir")
     fpath = os.path.join(tempdir.strpath, "{}.yaml".format(testname))
 
-    cluster = Cluster()
+    cluster = Cluster("foo")
     username = "user"
     keypair="~/.ssh/key"
     n = 5
@@ -122,6 +122,7 @@ def test_from_boto3(driver):
     name = "test_launch"
     ami = "ami-d05e75b8"
     instance_type = "m3.2xlarge"
+    region = "us-east-1"
     count = 5
     keyname = "mykey"
     keypair = None    # Skip check
@@ -141,4 +142,4 @@ def test_from_boto3(driver):
                               keypair=keypair,
                               check_ami=False)
 
-    instance = Cluster.from_boto3_instances(instances)
+    instance = Cluster.from_boto3_instances(region, instances)

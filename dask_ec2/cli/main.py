@@ -165,11 +165,10 @@ def up(ctx, name, keyname, keypair, region_name, vpc_id, subnet_id,
                               volume_size=volume_size,
                               keypair=keypair)
 
-    cluster = Cluster.from_boto3_instances(instances)
+    cluster = Cluster.from_boto3_instances(region_name, instances)
     cluster.set_username(username)
     cluster.set_keypair(keypair)
-    with open(filepath, "w") as f:
-        yaml.safe_dump(cluster.to_dict(), f, default_flow_style=False)
+    cluster.to_file(filepath)
 
     if _provision:
         ctx.invoke(provision, filepath=filepath, anaconda_=anaconda_, dask=dask,
@@ -187,19 +186,14 @@ def up(ctx, name, keyname, keypair, region_name, vpc_id, subnet_id,
               required=False,
               help="Filepath to the instances metadata")
 @click.option('--yes', '-y', is_flag=True, default=False, help='Answers yes to questions')
-@click.option("--region-name",
-              default="us-east-1",
-              show_default=True,
-              required=False,
-              help="AWS region")
-def destroy(ctx, filepath, yes, region_name):
+def destroy(ctx, filepath, yes):
     import os
     from ..ec2 import EC2
     cluster = Cluster.from_filepath(filepath)
 
     question = 'Are you sure you want to destroy the cluster?'
     if yes or click.confirm(question):
-        driver = EC2(region=region_name, default_vpc=False, default_subnet=False)
+        driver = EC2(region=cluster.region, default_vpc=False, default_subnet=False)
         #needed if there is no default vpc or subnet
         ids = [i.uid for i in cluster.instances]
         click.echo("Terminating instances")

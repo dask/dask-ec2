@@ -15,13 +15,14 @@ logger = logging.getLogger(__name__)
 
 class Cluster(object):
 
-    def __init__(self, instances=None):
+    def __init__(self, region, instances=None):
         self._pepper = None
+        self.region = region
         self.instances = instances or []
 
     @classmethod
-    def from_boto3_instances(cls, instances):
-        self = cls()
+    def from_boto3_instances(cls, region, instances):
+        self = cls(region)
         for boto3_instance in instances:
             instance = Instance.from_boto3_instance(boto3_instance)
             self.append(instance)
@@ -35,7 +36,7 @@ class Cluster(object):
 
     @classmethod
     def from_dict(cls, data):
-        self = cls()
+        self = cls(data["region"])
         instances = data["instances"]
         for instance in instances:
             self.instances.append(Instance.from_dict(instance))
@@ -90,6 +91,7 @@ class Cluster(object):
 
     def to_dict(self):
         ret = {}
+        ret["region"] = self.region
         ret["instances"] = []
         for instance in self.instances:
             ret["instances"].append(instance.to_dict())
