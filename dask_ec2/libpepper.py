@@ -4,10 +4,8 @@ A Python library for working with Salt's REST API
 (Specifically the rest_cherrypy netapi module.)
 
 '''
-import functools
 import json
 import logging
-import os
 import ssl
 try:
     ssl._create_default_https_context = ssl._create_stdlib_context
@@ -75,7 +73,7 @@ class Pepper(object):
 
         '''
         split = urlparse.urlsplit(api_url)
-        if not split.scheme in ['http', 'https']:
+        if split.scheme not in ['http', 'https']:
             raise PepperException("salt-api URL missing HTTP(s) protocol: {0}".format(self.api_url))
 
         self.api_url = api_url
@@ -93,8 +91,7 @@ class Pepper(object):
         :rtype: dictionary
 
         '''
-        if (hasattr(data, 'get') and
-                data.get('eauth') == 'kerberos') or self.auth.get('eauth') == 'kerberos':
+        if (hasattr(data, 'get') and data.get('eauth') == 'kerberos') or self.auth.get('eauth') == 'kerberos':
             return self.req_requests(path, data)
 
         headers = {
@@ -128,8 +125,8 @@ class Pepper(object):
         try:
             if not (self._ssl_verify):
                 con = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
-                #con.check_hostname = False
-                #con.verify_mode = ssl.CERT_NONE
+                # con.check_hostname = False
+                # con.verify_mode = ssl.CERT_NONE
                 f = urlopen(req, context=con)
             else:
                 f = urlopen(req)
@@ -175,11 +172,13 @@ class Pepper(object):
             headers.setdefault('X-Auth-Token', self.auth['token'])
         # Optionally toggle SSL verification
         self._ssl_verify = self.ignore_ssl_errors
-        params = {'url': self._construct_url(path),
-                  'headers': headers,
-                  'verify': self._ssl_verify == True,
-                  'auth': auth,
-                  'data': json.dumps(data),}
+        params = {
+            'url': self._construct_url(path),
+            'headers': headers,
+            'verify': self._ssl_verify,
+            'auth': auth,
+            'data': json.dumps(data)
+        }
         logger.debug('postdata {0}'.format(params))
         resp = requests.post(**params)
         if resp.status_code == 401:
@@ -206,7 +205,7 @@ class Pepper(object):
 
         Wraps :meth:`low`.
         '''
-        low = {'client': 'local', 'tgt': tgt, 'fun': fun,}
+        low = {'client': 'local', 'tgt': tgt, 'fun': fun}
 
         if arg:
             low['arg'] = arg
@@ -231,7 +230,7 @@ class Pepper(object):
 
         Wraps :meth:`low`.
         '''
-        low = {'client': 'local_async', 'tgt': tgt, 'fun': fun,}
+        low = {'client': 'local_async', 'tgt': tgt, 'fun': fun}
 
         if arg:
             low['arg'] = arg
@@ -266,7 +265,7 @@ class Pepper(object):
         Usage::
           runner('jobs.lookup_jid', jid=12345)
         '''
-        low = {'client': 'runner', 'fun': fun,}
+        low = {'client': 'runner', 'fun': fun}
 
         low.update(kwargs)
 
@@ -278,11 +277,9 @@ class Pepper(object):
         authentication token or an empty dict
 
         '''
-        self.auth = self.req('/login', {
-            'username': username,
-            'password': password,
-            'eauth': eauth
-        }).get('return', [{}])[0]
+        self.auth = self.req('/login', {'username': username,
+                                        'password': password,
+                                        'eauth': eauth}).get('return', [{}])[0]
 
         return self.auth
 

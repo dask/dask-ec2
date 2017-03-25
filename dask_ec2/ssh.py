@@ -82,9 +82,11 @@ class SSHClient(object):
         while not (channel.recv_ready() or channel.closed or channel.exit_status_ready()):
             time.sleep(.2)
 
-        ret = {'stdout': stdout.read().strip().decode('utf-8'),
-               'stderr': stderr.read().strip().decode('utf-8'),
-               'exit_code': channel.recv_exit_status()}
+        ret = {
+            'stdout': stdout.read().strip().decode('utf-8'),
+            'stderr': stderr.read().strip().decode('utf-8'),
+            'exit_code': channel.recv_exit_status()
+        }
         return ret
 
     def get_sftp(self):
@@ -109,17 +111,17 @@ class SSHClient(object):
             dirname, basename = posixpath.split(path)
             if self.dir_exists(dirname):
                 logger.debug("Creating directory %s mode=%s", path, mode)
-                self.sftp.mkdir(basename, mode=mode)    # sub-directory missing, so created it
+                self.sftp.mkdir(basename, mode=mode)  # sub-directory missing, so created it
                 self.sftp.chdir(basename)
             else:
-                self.mkdir(dirname)    # Make parent directories
+                self.mkdir(dirname)  # Make parent directories
                 self.mkdir(path)
 
     def dir_exists(self, path):
         try:
             self.sftp.chdir(path)
             return True
-        except IOError as error:
+        except IOError:
             return False
 
     def put(self, local, remote, sudo=False):
@@ -143,9 +145,9 @@ class SSHClient(object):
 
         if sudo:
             cmd = 'cp -rf {} {}'.format(remote, real_remote)
-            output = self.exec_command(cmd, sudo=True)
+            self.exec_command(cmd, sudo=True)
             cmd = 'rm -rf {}'.format(remote)
-            output = self.exec_command(cmd, sudo=True)
+            self.exec_command(cmd, sudo=True)
 
     def put_dir(self, local, remote, sudo=False):
         logger.debug("Uploading directory %s to %s", local, remote)
@@ -166,6 +168,6 @@ class SSHClient(object):
 
         if sudo:
             cmd = 'cp -rf {}/* {}'.format(remote, real_remote)
-            output = self.exec_command(cmd, sudo=True)
+            self.exec_command(cmd, sudo=True)
             cmd = 'rm -rf {}'.format(remote)
-            output = self.exec_command(cmd, sudo=True)
+            self.exec_command(cmd, sudo=True)

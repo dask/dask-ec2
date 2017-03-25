@@ -6,6 +6,7 @@ from .main import cli, print_state
 from ..cluster import Cluster
 from ..salt import upload_pillar
 
+
 @cli.group('notebook', invoke_without_command=True, short_help='Provision the Jupyter notebook')
 @click.pass_context
 @click.option("--file",
@@ -30,21 +31,13 @@ def notebook(ctx, filepath):
               show_default=True,
               required=False,
               help="Filepath to the instances metadata")
-@click.option("--password",
-              default="jupyter",
-              show_default=True,
-              required=False,
-              help="Password for Jupyter Notebook")
+@click.option("--password", default="jupyter", show_default=True, required=False, help="Password for Jupyter Notebook")
 @click.pass_context
 def notebook_install(ctx, filepath, password):
     click.echo("Installing Jupyter notebook on the head node")
     cluster = Cluster.from_filepath(filepath)
 
-    upload_pillar(cluster, "jupyter.sls",
-                  {"jupyter": {
-                      "password": password
-                    }
-                  })
+    upload_pillar(cluster, "jupyter.sls", {"jupyter": {"password": password}})
 
     # only install on head node
     output = cluster.salt_call("node-0", "state.sls", ["jupyter.notebook"])
@@ -57,7 +50,6 @@ def notebook_install(ctx, filepath, password):
     click.echo("Jupyter notebook available at http://%s:8888/ \nLogin with "
                "password: %s" %
                (cluster.head.ip, password))
-
 
 
 @notebook.command("open", short_help="Open a web browser pointing to the Notebook UI")

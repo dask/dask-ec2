@@ -6,7 +6,7 @@ from moto import mock_ec2
 
 from dask_ec2 import Cluster, Instance
 from dask_ec2.exceptions import DaskEc2Exception
-from .utils import remotetest, cluster, driver
+from .utils import remotetest
 
 
 def test_cluster():
@@ -27,7 +27,7 @@ def test_append_instance():
 
 def test_append_non_instance_type():
     cluster = Cluster("foo")
-    with pytest.raises(DaskEc2Exception) as excinfo:
+    with pytest.raises(DaskEc2Exception):
         cluster.append({"wrong": "type"})
 
 
@@ -64,7 +64,7 @@ def test_set_keypair():
 def test_dict_serde():
     cluster = Cluster("foo")
     username = "user"
-    keypair="~/.ssh/key"
+    keypair = "~/.ssh/key"
     n = 5
     for i in range(n):
         instance = Instance(uid="%i" % i, ip="{0}.{0}.{0}.{0}".format(i), username=username, keypair=keypair)
@@ -89,7 +89,7 @@ def test_from_filepath(request, tmpdir):
 
     cluster = Cluster("foo")
     username = "user"
-    keypair="~/.ssh/key"
+    keypair = "~/.ssh/key"
     n = 5
     for i in range(n):
         instance = Instance(uid="%i" % i, ip="{0}.{0}.{0}.{0}".format(i), username=username, keypair=keypair)
@@ -142,4 +142,4 @@ def test_from_boto3(driver):
                               keypair=keypair,
                               check_ami=False)
 
-    instance = Cluster.from_boto3_instances(region, instances)
+    Cluster.from_boto3_instances(region, instances)

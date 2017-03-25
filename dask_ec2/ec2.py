@@ -25,8 +25,9 @@ class EC2(object):
         self.iaminstance_name = iaminstance_name
 
         if test:
-            collection = self.ec2.instances.filter(Filters=[{"Name": "instance-state-name", "Values": ["running"]}])
-            _ = list(collection)
+            filters = [{"Name": "instance-state-name", "Values": ["running"]}]
+            collection = self.ec2.instances.filter(Filters=filters)
+            list(collection)
 
     def get_default_vpc(self):
         """
@@ -62,6 +63,8 @@ class EC2(object):
                         if subnet.availability_zone == availability_zone and subnet.default_for_az:
                             logger.debug("Default subnet found - Using Subnet ID: %s", subnet.id)
                             return subnet.id
+        if not self.vpc_id:
+            raise DaskEc2Exception("There is no VPC, please pass VPC ID or assign a default VPC")
         raise DaskEc2Exception("There is no default subnet on VPC %s, please pass a subnet ID" % self.vpc_id)
 
     def check_keyname(self, keyname):
@@ -74,11 +77,12 @@ class EC2(object):
         logger.debug("Checking that keyname '%s' exists on EC2", keyname)
         try:
             key_pair = self.client.describe_key_pairs(KeyNames=[keyname])
-            _ = [i for i in key_pair]
+            [i for i in key_pair]
         except ClientError as e:
             error_code = e.response["Error"]["Code"]
             if error_code == "InvalidKeyPair.NotFound":
-                raise DaskEc2Exception("The keyname '%s' does not exist, please create it in the EC2 console" % keyname)
+                raise DaskEc2Exception("The keyname '%s' does not exist, "
+                                       "please create it in the EC2 console" % keyname)
             else:
                 raise e
 
@@ -119,7 +123,7 @@ class EC2(object):
                 else:
                     raise DaskEc2Exception("Security group '%s' not found, please create or use the default '%s'" %
                                            (security_group, DEFAULT_SG_GROUP_NAME))
-        except ClientError as e:
+        except ClientError:
             raise DaskEc2Exception("Security group '%s' not found, please create or use the default '%s'" %
                                    (security_group, DEFAULT_SG_GROUP_NAME))
 
@@ -146,36 +150,34 @@ class EC2(object):
         logger.debug("Setting up default values for the '%s' security group", DEFAULT_SG_GROUP_NAME)
         security_group = self.get_security_groups(DEFAULT_SG_GROUP_NAME)[0]
 
-        IpPermissions = [
-            {
-                "IpProtocol": "tcp",
-                "FromPort": 0,
-                "ToPort": 65535,
-                "IpRanges": [
-                    {
-                        "CidrIp": "0.0.0.0/0"
-                    },
-                ],
-            }, {
-                "IpProtocol": "udp",
-                "FromPort": 0,
-                "ToPort": 65535,
-                "IpRanges": [
-                    {
-                        "CidrIp": "0.0.0.0/0"
-                    },
-                ],
-            }, {
-                "IpProtocol": "icmp",
-                "FromPort": -1,
-                "ToPort": -1,
-                "IpRanges": [
-                    {
-                        "CidrIp": "0.0.0.0/0"
-                    },
-                ],
-            }
-        ]
+        IpPermissions = [{
+            "IpProtocol": "tcp",
+            "FromPort": 0,
+            "ToPort": 65535,
+            "IpRanges": [
+                {
+                    "CidrIp": "0.0.0.0/0"
+                },
+            ],
+        }, {
+            "IpProtocol": "udp",
+            "FromPort": 0,
+            "ToPort": 65535,
+            "IpRanges": [
+                {
+                    "CidrIp": "0.0.0.0/0"
+                },
+            ],
+        }, {
+            "IpProtocol": "icmp",
+            "FromPort": -1,
+            "ToPort": -1,
+            "IpRanges": [
+                {
+                    "CidrIp": "0.0.0.0/0"
+                },
+            ],
+        }]
 
         try:
             security_group.authorize_egress(IpPermissions=IpPermissions)
@@ -205,8 +207,8 @@ class EC2(object):
 
         root_type = image["RootDeviceType"]
         if root_type != "ebs":
-            raise DaskEc2Exception("The AMI {} Root Device Type is not EBS. Only EBS Root Device AMI are supported.".format(
-                image_id))
+            raise DaskEc2Exception("The AMI {} Root Device Type is not EBS. "
+                                   "Only EBS Root Device AMI are supported.".format(image_id))
 
     def launch(self, name, image_id, instance_type, count, keyname,
                security_group_name=DEFAULT_SG_GROUP_NAME,
@@ -233,7 +235,7 @@ class EC2(object):
             },
         ]
 
-        if security_group_id is not None:
+        if security_group_id:
             security_groups_ids = [security_group_id]
         else:
             security_groups_ids = self.get_security_groups_ids(security_group_name)
@@ -244,7 +246,7 @@ class EC2(object):
                       MinCount=count,
                       MaxCount=count,
                       InstanceType=instance_type,
-                      SecurityGroupIds=self.get_security_groups_ids(security_group_name),
+                      SecurityGroupIds=security_groups_ids,
                       BlockDeviceMappings=device_map)
         if self.subnet_id is not None and self.subnet_id != "":
             kwargs['SubnetId'] = self.subnet_id
@@ -259,8 +261,8 @@ class EC2(object):
         try:
             waiter.wait(InstanceIds=ids)
         except WaiterError:
-            raise DaskEc2Exception(
-                "An unexpected error occurred when launching the requested instances. Refer to the AWS Management Console for more information.")
+            raise DaskEc2Exception("An unexpected error occurred when launching the requested instances. "
+                                   "Refer to the AWS Management Console for more information.")
 
         collection = self.ec2.instances.filter(InstanceIds=ids)
         instances = []

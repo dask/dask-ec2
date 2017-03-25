@@ -418,6 +418,7 @@ def get_config_from_root(root):
 class NotThisMethod(Exception):
     pass
 
+
 # these dictionaries contain VCS-specific tools
 LONG_VERSION_PY = {}
 HANDLERS = {}
@@ -1501,7 +1502,7 @@ def get_cmdclass():
                                     "STYLE": cfg.style,
                                     "TAG_PREFIX": cfg.tag_prefix,
                                     "PARENTDIR_PREFIX": cfg.parentdir_prefix,
-                                    "VERSIONFILE_SOURCE": cfg.versionfile_source,})
+                                    "VERSIONFILE_SOURCE": cfg.versionfile_source})
 
         cmds["build_exe"] = cmd_build_exe
         del cmds["build_py"]
@@ -1601,7 +1602,7 @@ def do_setup():
                         "STYLE": cfg.style,
                         "TAG_PREFIX": cfg.tag_prefix,
                         "PARENTDIR_PREFIX": cfg.parentdir_prefix,
-                        "VERSIONFILE_SOURCE": cfg.versionfile_source,})
+                        "VERSIONFILE_SOURCE": cfg.versionfile_source})
 
     ipy = os.path.join(os.path.dirname(cfg.versionfile_source), "__init__.py")
     if os.path.exists(ipy):

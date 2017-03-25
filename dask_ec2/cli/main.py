@@ -5,12 +5,12 @@ import click
 
 from botocore.exceptions import ClientError
 
-import dask_ec2
-from ..salt import Response
 from ..cluster import Cluster
-from ..exceptions import DaskEc2Exception
 from ..config import setup_logging
+from ..exceptions import DaskEc2Exception
+from ..salt import Response
 from .utils import Table
+import dask_ec2
 
 
 def start():
@@ -28,8 +28,7 @@ def start():
         click.echo("Unexpected EC2 error: %s" % e, err=True)
         sys.exit(1)
     except KeyboardInterrupt:
-        click.echo(
-            "Interrupted by Ctrl-C. One or more actions could be still running in the cluster")
+        click.echo("Interrupted by Ctrl-C. One or more actions could be still running in the cluster")
         sys.exit(1)
     except Exception as e:
         click.echo(traceback.format_exc(), err=True)
@@ -53,7 +52,10 @@ def cli(ctx):
               required=True,
               type=click.Path(exists=True),
               help="Path to the keypair that matches the keyname")
-@click.option("--name", required=False, default="dask-ec2-cluster", help="Tag name on EC2")
+@click.option("--name",
+              required=False,
+              default="dask-ec2-cluster",
+              help="Tag name on EC2")
 @click.option("--region-name",
               default="us-east-1",
               show_default=True,
@@ -139,19 +141,22 @@ def cli(ctx):
               help="Install Dask/Distributed from git master")
 def up(ctx, name, keyname, keypair, region_name, vpc_id, subnet_id,
        iaminstance_name, ami, username, instance_type, count,
-       security_group_name, security_group_id, volume_type, volume_size, filepath, _provision, anaconda_,
-       dask, notebook, nprocs, source):
+       security_group_name, security_group_id, volume_type, volume_size,
+       filepath, _provision, anaconda_, dask, notebook, nprocs, source):
     import os
-    import yaml
     from ..ec2 import EC2
 
     if os.path.exists(filepath):
-        if not click.confirm("A file named {} already exists, proceding will overwrite this file. Continue?".format(filepath)):
+        msg = "A file named {} already exists, proceding will overwrite this file. Continue?".format(filepath)
+        if not click.confirm(msg):
             click.echo("Not doing anything")
             sys.exit(0)
 
-    driver = EC2(region=region_name, vpc_id=vpc_id, subnet_id=subnet_id,
-                 default_vpc=not(vpc_id), default_subnet=not(subnet_id),
+    driver = EC2(region=region_name,
+                 vpc_id=vpc_id,
+                 subnet_id=subnet_id,
+                 default_vpc=not (vpc_id),
+                 default_subnet=not (subnet_id),
                  iaminstance_name=iaminstance_name)
     click.echo("Launching nodes")
     instances = driver.launch(name=name,
@@ -171,8 +176,8 @@ def up(ctx, name, keyname, keypair, region_name, vpc_id, subnet_id,
     cluster.to_file(filepath)
 
     if _provision:
-        ctx.invoke(provision, filepath=filepath, anaconda_=anaconda_, dask=dask,
-                   notebook=notebook, nprocs=nprocs, source=source)
+        ctx.invoke(provision, filepath=filepath, anaconda_=anaconda_,
+                   dask=dask, notebook=notebook, nprocs=nprocs, source=source)
 
 
 @cli.command(short_help="Destroy cluster")
@@ -186,6 +191,7 @@ def up(ctx, name, keyname, keypair, region_name, vpc_id, subnet_id,
               required=False,
               help="Filepath to the instances metadata")
 @click.option('--yes', '-y', is_flag=True, default=False, help='Answers yes to questions')
+@click.option("--region-name", default="us-east-1", show_default=True, required=False, help="AWS region")
 def destroy(ctx, filepath, yes):
     import os
     from ..ec2 import EC2
@@ -193,8 +199,8 @@ def destroy(ctx, filepath, yes):
 
     question = 'Are you sure you want to destroy the cluster?'
     if yes or click.confirm(question):
-        driver = EC2(region=cluster.region, default_vpc=False, default_subnet=False)
-        #needed if there is no default vpc or subnet
+        driver = EC2(region=cluster.region_name, default_vpc=False, default_subnet=False)
+        # needed if there is no default vpc or subnet
         ids = [i.uid for i in cluster.instances]
         click.echo("Terminating instances")
         driver.destroy(ids)
@@ -313,17 +319,14 @@ def provision(ctx, filepath, ssh_check, master, minions, upload, anaconda_, dask
         upload_formulas(cluster)
         click.echo("Uploading conda and cluster settings")
         upload_pillar(cluster, "conda.sls", {"conda": {"pyversion": 2 if six.PY2 else 3}})
-        upload_pillar(cluster, "cluster.sls",
-                      {"cluster": {
-                          "username": cluster.instances[0].username
-                        }
-                      })
+        upload_pillar(cluster, "cluster.sls", {"cluster": {"username": cluster.instances[0].username}})
     if anaconda_:
         ctx.invoke(anaconda, filepath=filepath)
     if dask:
         from .daskd import dask_install
         ctx.invoke(dask_install, filepath=filepath, nprocs=nprocs, source=source)
     if notebook:
+        from .notebook import notebook_install
         ctx.invoke(notebook_install, filepath=filepath)
 
 
@@ -363,5 +366,5 @@ def print_state(output):
     return response
 
 
-from .daskd import *
-from .notebook import *
+from .daskd import *  # noqa
+from .notebook import *  # noqa

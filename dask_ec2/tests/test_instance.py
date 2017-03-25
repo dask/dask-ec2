@@ -1,12 +1,9 @@
 from __future__ import absolute_import, print_function, division
 
-import pytest
-
 from moto import mock_ec2
 
 from dask_ec2 import Instance
-from dask_ec2.exceptions import DaskEc2Exception
-from .utils import remotetest, cluster, driver
+from .utils import remotetest
 
 
 def test_instance():
@@ -38,7 +35,7 @@ def test_dict_serde():
 @remotetest
 def test_check_ssh(cluster):
     head = cluster.head
-    assert head.check_ssh() == True
+    assert head.check_ssh()
 
 
 @mock_ec2
@@ -51,7 +48,6 @@ def test_from_boto3(driver):
     keypair = None    # Skip check
     volume_type = "gp2"
     volume_size = 500
-    security_group = "another-sg"
 
     driver.ec2.create_key_pair(KeyName=keyname)
     instances = driver.launch(name=name,
@@ -65,4 +61,4 @@ def test_from_boto3(driver):
                               keypair=keypair,
                               check_ami=False)
 
-    instance = Instance.from_boto3_instance(instances[0])
+    Instance.from_boto3_instance(instances[0])

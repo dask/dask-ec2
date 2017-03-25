@@ -12,4 +12,5 @@ dependencies:
   - pylint
   - pip:
     - moto==0.4.30
+    - pytest-flake8
     - twine

@@ -8,6 +8,7 @@ pyyaml
 pytest
 coverage
 pytest-cov
+pytest-flake8
 moto
 
 # Utils

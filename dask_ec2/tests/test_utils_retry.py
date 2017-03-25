@@ -41,7 +41,9 @@ def catch_NotImplementedException_raises_Exception():
 
 def test_ok():
     assert ok() == 35
-    assert ok_with_args('pew', 123, kw='args') == (('pew', 123), {'kw': 'args'})
+
+    expected = (('pew', 123), {'kw': 'args'})
+    assert ok_with_args('pew', 123, kw='args') == expected
 
 
 def test_fails_after_retries():
