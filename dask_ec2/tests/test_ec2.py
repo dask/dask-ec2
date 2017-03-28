@@ -17,6 +17,7 @@ keypair = None  # Skip check
 volume_type = "gp2"
 volume_size = 500
 security_group = "another-sg"
+tags = ["key2:value2", "key1:value1"]
 
 
 @mock_ec2
@@ -47,7 +48,8 @@ def test_launch_no_keyname(driver):
                       volume_type=volume_type,
                       volume_size=volume_size,
                       keypair=keypair,
-                      check_ami=False)
+                      check_ami=False,
+                      tags=tags)
 
     assert ("The keyname 'mykey' does not exist, "
             "please create it in the EC2 console") == str(e.value)
@@ -67,10 +69,33 @@ def test_launch_no_keyname(driver):
                   volume_type=volume_type,
                   volume_size=volume_size,
                   keypair=keypair,
-                  check_ami=False)
+                  check_ami=False,
+                  tags=tags)
 
     collection = driver.ec2.instances.filter()
     instances = [i for i in collection]
+
+    custom_tags = []
+    for t in tags:
+        k, v = t.split(":")
+        custom_tags.append({"Value": v, "Key": k})
+    for idx, inst in enumerate(instances):
+        tags_ = [{"Value": "{0}-{1}".format(name, idx), "Key": "Name"}]
+        tags_.extend(custom_tags)
+        assert (len(inst.tags)) == 3
+        assert (len(tags_)) == 3
+
+        tags_dict = dict()
+        # tags look like:
+        # {'Value': 'value1', 'Key': 'key1'}
+        for t in inst.tags:
+            k = t['Key']
+            v = t['Value']
+            tags_dict[k] = v
+        print(tags_dict)
+        assert tags_dict['key1'] == "value1"
+        assert tags_dict['key2'] == "value2"
+
     assert len(instances) == count
 
 

@@ -16,7 +16,9 @@ DEFAULT_SG_GROUP_NAME = "dask-ec2-default"
 class EC2(object):
 
     def __init__(self, region, vpc_id=None, subnet_id=None, default_vpc=True,
-                 default_subnet=True, iaminstance_name=None, test=True):
+                 default_subnet=True, iaminstance_name=None,
+                 test=True):
+
         self.ec2 = boto3.resource("ec2", region_name=region)
         self.client = boto3.client("ec2", region_name=region)
 
@@ -224,6 +226,12 @@ class EC2(object):
             self.check_image_is_ebs(image_id)
         self.check_sg(security_group_name)
 
+        # assumed to be formatted correctly in ec2.py
+        custom_tags = []
+        for t in tags:
+            k, v = t.split(":")
+            custom_tags.append({"Key": k, "Value": v})
+
         device_map = [
             {
                 "DeviceName": "/dev/sda1",
@@ -268,18 +276,12 @@ class EC2(object):
         instances = []
         for i, instance in enumerate(collection):
             instances.append(instance)
+            for v in instance.volumes.all():
+                v.create_tags(DryRun=False, Tags=custom_tags)
             if name:
                 logger.debug("Tagging instance '%s'", instance.id)
                 tags_ = [{"Key": "Name", "Value": "{0}-{1}".format(name, i)}]
-                for tag_pair in tags:
-                    parts = tag_pair.split(":")
-                    if len(parts) == 2:
-                        key = parts[0]
-                        value = parts[1]
-                    else:
-                        key = "Tag"
-                        value = tag_pair
-                    tags_.append({"Key": key, "Value": value})
+                tags_.extend(custom_tags)
                 self.ec2.create_tags(Resources=[instance.id], Tags=tags_)
 
         return instances
