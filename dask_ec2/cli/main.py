@@ -150,7 +150,10 @@ def up(ctx, name, keyname, keypair, region_name, vpc_id, subnet_id,
     import os
     from ..ec2 import EC2
 
-    tags = tags.split(',')
+    if tags:
+        tags = tags.split(',')
+    else:
+        tags = []
 
     # check tag formatting
     for t in tags:
