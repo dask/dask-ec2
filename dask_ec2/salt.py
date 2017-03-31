@@ -1,5 +1,5 @@
 """
-Utilies to manage salt bootstrap and other stuff
+Utilities to manage salt bootstrap and other stuff
 """
 import copy
 import os
@@ -37,7 +37,7 @@ class Response(dict):
 
     def aggregate_by(self, field='result', validation=True):
         """
-        Usefull when the Command module return a dictionary, for example state.sls
+        Useful when the Command module returns a dictionary, for example state.sls
         Default values are for salt module `state.sls`
         """
         try:
@@ -63,7 +63,7 @@ class Response(dict):
 
     def aggregated_to_table(self, agg=None):
         """
-        From an aggregated response it retuns a list of 3 columns:
+        From an aggregated response it returns a list of 3 columns:
         1. node id
         2. successful states
         3. failed states
@@ -328,7 +328,7 @@ def install_salt_minion(cluster):
             if minion_data is False:
                 failed_nodes.append(minion_ip)
         if failed_nodes:
-            raise DaskEc2Exception("Error bootstraping salt-minion at nodes: %s (maybe try again)" % failed_nodes)
+            raise DaskEc2Exception("Error bootstrapping salt-minion at nodes: %s (maybe try again)" % failed_nodes)
 
     logger.debug("Configuring salt-mine on the salt minions")
     results, threads = {}, []

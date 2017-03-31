@@ -117,7 +117,7 @@ dask-ec2 ssh  # ssh into head node
 ipython  # start ipython shell
 
 from dask.distributed import Client, progress
-c = Client(127.0.0.1:8786')  # Connect to scheduler running on the head node
+c = Client('127.0.0.1:8786')  # Connect to scheduler running on the head node
 
 To connect locally
 ------------------

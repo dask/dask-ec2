@@ -160,7 +160,7 @@ def up(ctx, name, keyname, keypair, region_name, vpc_id, subnet_id,
             sys.exit(1)
 
     if os.path.exists(filepath):
-        msg = "A file named {} already exists, proceding will overwrite this file. Continue?".format(filepath)
+        msg = "A file named {} already exists, proceeding will overwrite this file. Continue?".format(filepath)
         if not click.confirm(msg):
             click.echo("Not doing anything")
             sys.exit(0)
@@ -322,10 +322,10 @@ def provision(ctx, filepath, ssh_check, master, minions, upload, anaconda_, dask
         t = Table(data, 1)
         t.write()
     if master:
-        click.echo("Bootstraping salt master")
+        click.echo("Bootstrapping salt master")
         install_salt_master(cluster)
     if minions:
-        click.echo("Bootstraping salt minions")
+        click.echo("Bootstrapping salt minions")
         install_salt_minion(cluster)
     if upload:
         click.echo("Uploading salt formulas")

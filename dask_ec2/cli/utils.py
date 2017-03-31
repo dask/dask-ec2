@@ -55,7 +55,7 @@ class Table():
                 if (len(str(c)) > maxColLengths[j]):
                     maxColLengths[j] = len(str(c))
         # DEBUG: print maxColLengths
-        # Print rable
+        # Print table
         if self.tabletype == 0:
             border = self.formatRowBorder(maxColLengths)
             i = 0
