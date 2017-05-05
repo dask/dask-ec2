@@ -66,6 +66,20 @@ update-pandas:
     - require:
       - update-pyopenssl
 
+update-dask-searchcv:
+  pip.installed:
+    - name: dask-searchcv
+    - bin_env: {{ install_prefix }}/bin/pip
+    - require:
+      - sls: conda
+
+update-dask-glm:
+  pip.installed:
+    - name: dask-glm
+    - bin_env: {{ install_prefix }}/bin/pip
+    - require:
+      - sls: conda
+
 correct_perms:
   file.directory:
     - name: {{ install_prefix }}
