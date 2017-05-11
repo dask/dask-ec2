@@ -75,7 +75,7 @@ update-dask-searchcv:
 
 update-dask-glm:
   pip.installed:
-    - name: dask-glm
+    - name: git+https://github.com/dask/dask-glm
     - bin_env: {{ install_prefix }}/bin/pip
     - require:
       - sls: conda
