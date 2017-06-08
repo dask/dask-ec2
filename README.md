@@ -38,12 +38,19 @@ Options:
   --keypair PATH                Path to the keypair that matches the keyname
                                 [required]
   --name TEXT                   Tag name on EC2
+  --tags TEXT                   Additional EC2 tags.  Comma separated K:V
+                                pairs: K1:V1,K2:V2
   --region-name TEXT            AWS region  [default: us-east-1]
+  --vpc-id TEXT                 EC2 VPC ID
+  --subnet-id TEXT              EC2 Subnet ID on the VPC
+  --iaminstance-name TEXT       IAM Instance Name
   --ami TEXT                    EC2 AMI  [default: ami-d05e75b8]
   --username TEXT               User to SSH to the AMI  [default: ubuntu]
   --type TEXT                   EC2 Instance Type  [default: m3.2xlarge]
   --count INTEGER               Number of nodes  [default: 4]
   --security-group TEXT         Security Group Name  [default: dask-ec2-default]
+  --security-group-id TEXT      Security Group ID (overwrites Security Group
+                                Name)
   --volume-type TEXT            Root volume type  [default: gp2]
   --volume-size INTEGER         Root volume size (GB)  [default: 500]
   --file PATH                   File to save the metadata  [default:
@@ -55,6 +62,8 @@ Options:
   --notebook / --no-notebook    Start a Jupyter Notebook in the head node
                                 [default: True]
   --nprocs INTEGER              Number of processes per worker  [default: 1]
+  --source / --no-source        Install Dask/Distributed from git master
+                                [default: False]
   -h, --help                    Show this message and exit.
 ```
 
