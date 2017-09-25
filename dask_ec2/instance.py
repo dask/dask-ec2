@@ -23,7 +23,10 @@ class Instance(object):
 
     @classmethod
     def from_boto3_instance(cls, instance):
-        self = cls(ip=instance.public_ip_address, uid=instance.id)
+        instance_ip = instance.public_ip_address
+        if instance_ip is None:
+            instance_ip = instance.private_ip_address
+        self = cls(ip=instance_ip, uid=instance.id)
         return self
 
     @retry(catch=(BadHostKeyException, AuthenticationException, SSHException, socket.error, TypeError,
