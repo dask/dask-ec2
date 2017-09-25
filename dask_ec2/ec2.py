@@ -276,8 +276,9 @@ class EC2(object):
         instances = []
         for i, instance in enumerate(collection):
             instances.append(instance)
-            for v in instance.volumes.all():
-                v.create_tags(DryRun=False, Tags=custom_tags)
+            if len(custom_tags) > 0:
+                for v in instance.volumes.all():
+                    v.create_tags(DryRun=False, Tags=custom_tags)
             if name:
                 logger.debug("Tagging instance '%s'", instance.id)
                 tags_ = [{"Key": "Name", "Value": "{0}-{1}".format(name, i)}]
