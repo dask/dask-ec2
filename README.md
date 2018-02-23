@@ -3,6 +3,15 @@
 Easily launch a cluster on Amazon EC2 configured with `dask.distributed`,
 Jupyter Notebooks, and Anaconda.
 
+
+## DEPRECATED
+
+This project is not actively maintained.  Instead, to deploy Dask on EC2
+we recommend the use of Kubernetes.
+See [dask.pydata.org/en/latest/setup/cloud.html](http://dask.pydata.org/en/latest/setup/cloud.html)
+for up-to-date information.
+
+
 ## Installation
 
 You also install `dask-ec2` using pip:
