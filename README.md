@@ -11,6 +11,7 @@ we recommend the use of Kubernetes.
 See [dask.pydata.org/en/latest/setup/cloud.html](http://dask.pydata.org/en/latest/setup/cloud.html)
 for up-to-date information.
 
+An experimental alternative [daskec2lite](https://github.com/lionfish0/daskec2lite) is written with the aim of replicating some of the features of dask-ec2.
 
 ## Installation
 
