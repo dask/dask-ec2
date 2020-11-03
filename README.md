@@ -1,17 +1,14 @@
+## ARCHIVED
+
+As of November 3rd, 2020 this respository is now archived. Please consult
+the [Dask Cloud](https://docs.dask.org/en/latest/setup/cloud.html) docs page
+for more information on deploying Dask with cloud resources.
+
+
 # Dask EC2 [![Build Status](https://travis-ci.org/dask/dask-ec2.svg?branch=master)](https://travis-ci.org/dask/dask-ec2) [![Coverage Status](https://coveralls.io/repos/github/dask/dask-ec2/badge.svg?branch=master)](https://coveralls.io/github/dask/dask-ec2?branch=master)
 
 Easily launch a cluster on Amazon EC2 configured with `dask.distributed`,
 Jupyter Notebooks, and Anaconda.
-
-
-## DEPRECATED
-
-This project is not actively maintained.  Instead, to deploy Dask on EC2
-we recommend the use of Kubernetes.
-See [dask.pydata.org/en/latest/setup/cloud.html](http://dask.pydata.org/en/latest/setup/cloud.html)
-for up-to-date information.
-
-An experimental alternative [daskec2lite](https://github.com/lionfish0/daskec2lite) is written with the aim of replicating some of the features of dask-ec2.
 
 ## Installation
 
